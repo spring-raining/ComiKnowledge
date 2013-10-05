@@ -1,0 +1,10 @@
+*~
+.*
+!.gitignore
+.DS_Store
+.idea/
+*.pyc
+*.pyo
+
+api/
+settings.py
