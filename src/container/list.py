@@ -121,3 +121,7 @@ class ColorContainer:
             else:
                 settings.remove(k)
         settings.endGroup()
+
+if __name__ == "__main__":
+    # ここにテストを書くと新刊が目の前で売り切れる
+    pass

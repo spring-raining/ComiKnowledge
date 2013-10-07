@@ -9,3 +9,7 @@ class CoError(Exception):
 
     def __str__(self):
         return self.reason
+
+if __name__ == "__main__":
+    # なにも書かないで
+    pass

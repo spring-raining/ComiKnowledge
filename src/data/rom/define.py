@@ -168,9 +168,5 @@ def import_define(path, encoding):
     return rtn
 
 if __name__ == "__main__":
-    c = import_define("C83DEF.TXT", "shift-jis")
-    for i in c.comiket_genre.keys():
-        print c.comiket_genre[i]
-    for i in c.comiket_date.keys():
-        j = c.comiket_date[i]
-        print str(j.year) +"/"+ str(j.month) +"/"+ str(j.day) +"/"+ j.week
+    # テストはテストクラスへ
+    pass

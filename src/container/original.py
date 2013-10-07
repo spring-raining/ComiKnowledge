@@ -64,6 +64,5 @@ class OriginalMemberContainer:
         settings.endGroup()
 
 if __name__ == "__main__":
-    test_member = OriginalMemberContainer()
-    #print test_member.id
-    test_member.import_json("AHO")
+    # なにもかくな
+    pass
