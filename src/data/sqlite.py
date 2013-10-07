@@ -29,6 +29,5 @@ class Sqlite():
 
 
 if __name__ == "__main__":
-    sqlite = Sqlite("webcatalog83.db")
-    #print sqlite.select("ComiketCircleWC", "*", "where circleName='apricot+'")
-    print sqlite.select("ComiketInfoWC", "*")
+    # ここにメソッド書くべからず
+    pass

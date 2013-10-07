@@ -29,8 +29,5 @@ def merge_list(m_list, apply_color=0, apply_header=0):
 
 
 if __name__ == "__main__":
-    a = list.import_list("csv_win.CSV")
-    b = list.import_list("csv_win.CSV")
-    m_list = [a, b]
-    merge = merge_list(m_list)
-    print merge.circle[130658].memo
+    # ここにテストを書いちゃだめ
+    pass

@@ -25,4 +25,5 @@ def resize_thumbnail(path, size):
     canvas.save(path, "PNG", quality=95)
 
 if __name__ == "__main__":
-    save_thumbnail(get_twitter_icon_url("spring_raining"), os.path.dirname(__file__)+"/test.png")
+    # テストは書いちゃだめ
+    pass

@@ -231,5 +231,5 @@ def save_list(path, lists, members, color, profile=None):
 
 
 if __name__ == "__main__":
-    (pro, lis) = import_list("csv_win.CSV")
-    save_list("csv_win2.CSV", lis, OriginalMemberContainer())
+    # ここにテストを書いてはいけない
+    pass

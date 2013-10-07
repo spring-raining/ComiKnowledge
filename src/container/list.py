@@ -121,3 +121,8 @@ class ColorContainer:
             else:
                 settings.remove(k)
         settings.endGroup()
+
+
+if __name__ == "__main__":
+    # なにもかくな
+    pass

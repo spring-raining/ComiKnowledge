@@ -57,3 +57,7 @@ def read_cut_from_sqlite(circle_number, sqlite):
         return dummy
     except:
         return
+
+if __name__ == "__main__":
+    # テストは書かないで
+    pass

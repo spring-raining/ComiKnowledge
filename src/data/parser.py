@@ -56,5 +56,5 @@ def parse_checklist_array(path):
 
 
 if __name__ == "__main__":
-    #print parse_tab_array("C83ROM.TXT", "utf-16")
-    print parse_checklist_array("list/csv_wm.CSV")
+    # テストはテストクラスへ
+    pass

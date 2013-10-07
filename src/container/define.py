@@ -110,3 +110,8 @@ class DefineContainer:
             self.print_area = None
             self.small_map_key = None
             self.fine_print_area = None
+
+
+if __name__ == "__main__":
+    # ここにてすとをかくべからず
+    pass
