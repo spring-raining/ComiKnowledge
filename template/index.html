@@ -1,12 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>hogehoge</title>
-</head>
-<body>
-<div id="wrapper">
-    <h1>ComiKnowledge</h1>
-    {{ test }}
-</div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>ComiKnowledge</h1>
+  {{ test }}
+  <p><a href="{% url "socialauth_begin" "twitter" %}">Twitterアカウントでログイン</a></p>
+{% endblock %}
