@@ -10,6 +10,8 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'ck.views.index'),
+    url(r'^logout/$', 'ck.views.logout'),
+    url(r'', include('social_auth.urls')),
     # url(r'^ComiKnowledge/', include('ComiKnowledge.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
