@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+    <title>{% block title %}hogehoge{% endblock %}</title>
+
+    {% block script %}{% endblock %}
+  </head>
+
+  <body>
+    <div id="header">
+      {% block header %}{% endblock %}
+    </div>
+
+    <div id="content">
+      {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+      {% block footer %}{% endblock %}
+    </div>
+  </body>
+</html>
