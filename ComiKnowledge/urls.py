@@ -10,6 +10,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'ck.views.index'),
+    url(r'^admin/', include(admin.site.urls)),
     url(r'^home/$', 'ck.views.home'),
     url(r'^login/$', 'ck.views.login'),
     url(r'^logout/$', 'ck.views.logout'),
