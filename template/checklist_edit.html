@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ list.list_name }}{% endblock %}
+
+{% block content %}
+  <h1>{{ list.list_name }}を編集</h1>
+
+  <table border="1">
+    {% for circle in circles %}
+      <tr>
+        <td>{{ circle.serial_number }}</td>
+        <td>{{ circle.get_long_space }}</td>
+        <td>{{ circle.circle_name }}</td>
+        <td>{{ circle.description }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  <p><a href="/checklist/">チェックリスト一覧へ</a></p>
+  <p><a href="/home/">ホームへ</a></p>
+  <p><a href="/logout/">ログアウト</a></p>
+{% endblock %}

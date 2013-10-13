@@ -8,18 +8,17 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
     url(r'^$', 'ck.views.index'),
-    url(r'^admin/', include(admin.site.urls)),
     url(r'^home/$', 'ck.views.home'),
     url(r'^login/$', 'ck.views.login'),
     url(r'^logout/$', 'ck.views.logout'),
+    url(r'^checklist/$', 'ck.views.checklist'),
+    url(r'^checklist/(?P<list_id>\d+)/$', 'ck.views.checklist_edit'),
     url(r'', include('social_auth.urls')),
-    # url(r'^ComiKnowledge/', include('ComiKnowledge.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls)),
 )

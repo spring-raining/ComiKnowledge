@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.contrib.auth import models as auth_models
 
 ENCODE_CHOICES = (
     ("S", "Shift_JIS"),
@@ -10,74 +11,91 @@ ENCODE_CHOICES = (
 
 
 #
+# CSVリストのモデル
+#
+class List(models.Model):
+    parent_user = models.ForeignKey(auth_models.User)
+    list_name = models.CharField(max_length=256)
+    header_name = models.CharField(max_length=256)
+    header_encoding = models.CharField(max_length=20)
+    header_id = models.CharField(max_length=256, null=True)
+    last_select_page = models.PositiveIntegerField(null=True)
+    last_select_circle = models.IntegerField(null=True)
+    mac_print_info = models.TextField(null=True)
+
+    def __unicode__(self):
+        return self.list_name
+
+#
 # CSVリストで記録されているサークルのモデル
 #
 class ListCircle(models.Model):
+    parent_list = models.ForeignKey(List)
     serial_number = models.PositiveIntegerField()
-    color_number = models.PositiveSmallIntegerField()
-    page_number = models.PositiveIntegerField()
-    cut_index = models.PositiveIntegerField()
-    week = models.CharField(max_length=1)
-    area = models.CharField(max_length=1)
-    block = models.CharField(max_length=1)
-    space_number = models.PositiveSmallIntegerField()
-    genre_code = models.PositiveSmallIntegerField()
+    color_number = models.PositiveSmallIntegerField(default=0)
+    page_number = models.PositiveIntegerField(null=True)
+    cut_index = models.PositiveIntegerField(null=True)
+    week = models.CharField(max_length=1, null=True)
+    area = models.CharField(max_length=1, null=True)
+    block = models.CharField(max_length=1, null=True)
+    space_number = models.PositiveSmallIntegerField(null=True)
+    genre_code = models.PositiveSmallIntegerField(null=True)
     circle_name = models.CharField(max_length=100)
-    circle_name_yomigana = models.CharField(max_length=100)
-    pen_name = models.CharField(max_length=100)
-    book_name = models.CharField(max_length=100)
-    url = models.URLField(max_length=100)
-    mail = models.CharField(max_length=100)
-    description = models.CharField(max_length=4000)
-    memo = models.CharField(max_length=4000)
-    map_x = models.IntegerField()
-    map_y = models.IntegerField()
-    layout = models.IntegerField()
-    space_number_sub = models.CharField(max_length=1, choices=(("a","a"), ("b","b")))
-    update_data = models.CharField(max_length=4000)
-    circlems_url = models.URLField(max_length=100)
-    rss = models.CharField(max_length=100)
-    rss_data = models.CharField(max_length=4000)
+    circle_name_yomigana = models.CharField(max_length=100, null=True)
+    pen_name = models.CharField(max_length=100, null=True)
+    book_name = models.CharField(max_length=100, null=True)
+    url = models.URLField(max_length=100, null=True)
+    mail = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=4000, null=True)
+    memo = models.CharField(max_length=4000, null=True)
+    map_x = models.IntegerField(null=True)
+    map_y = models.IntegerField(null=True)
+    layout = models.IntegerField(null=True)
+    space_number_sub = models.CharField(max_length=1, choices=(("a","a"), ("b","b")), null=True)
+    update_data = models.CharField(max_length=4000, null=True)
+    circlems_url = models.URLField(max_length=100, null=True)
+    rss = models.CharField(max_length=100, null=True)
+    rss_data = models.CharField(max_length=4000, null=True)
+
+    def __unicode__(self):
+        return self.circle_name
+
+    def get_long_space(self):
+        if not self.area or not self.block or not self.space_number or not self.space_number_sub:
+            return None
+        else:
+            return "%s%s-%d%s" % (self.area, self.block, self.space_number, self.space_number_sub)
 
 #
 # CSVリストで記録されている未登録サークルのモデル
 #
 class ListUnKnown(models.Model):
+    parent_list = models.ForeignKey(List)
     circle_name = models.CharField(max_length=100)
-    circle_name_yomigana = models.CharField(max_length=100)
-    pen_name = models.CharField(max_length=100)
-    memo = models.CharField(max_length=4000)
-    color_number = models.PositiveSmallIntegerField()
-    book_name = models.CharField(max_length=100)
-    url = models.URLField(max_length=100)
-    mail = models.CharField(max_length=100)
-    description = models.CharField(max_length=4000)
-    update_data = models.CharField(max_length=4000)
-    circlems_url = models.URLField(max_length=100)
-    rss = models.CharField(max_length=100)
+    circle_name_yomigana = models.CharField(max_length=100, null=True)
+    pen_name = models.CharField(max_length=100, null=True)
+    memo = models.CharField(max_length=4000, null=True)
+    color_number = models.PositiveSmallIntegerField(default=0)
+    book_name = models.CharField(max_length=100, null=True)
+    url = models.URLField(max_length=100, null=True)
+    mail = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=4000, null=True)
+    update_data = models.CharField(max_length=4000, null=True)
+    circlems_url = models.URLField(max_length=100, null=True)
+    rss = models.CharField(max_length=100, null=True)
+
+    def __unicode__(self):
+        return self.circle_name
 
 #
 # CSVリストで記録されている色のモデル
 #
 class ListColor(models.Model):
+    parent_list = models.ForeignKey(List)
     color_number = models.PositiveSmallIntegerField()
     check_color = models.CharField(max_length=6)
     print_color = models.CharField(max_length=6)
-    description = models.CharField(max_length=4000)
-
-#
-# CSVリストのモデル
-#
-class List(models.Model):
-    circle = models.ForeignKey(ListCircle)
-    unknown = models.ForeignKey(ListUnKnown)
-    color = models.ForeignKey(ListColor)
-    header_name = models.CharField(max_length=256)
-    header_encoding = models.CharField(max_length=1, choices=ENCODE_CHOICES)
-    header_id = models.CharField(max_length=256)
-    last_select_page = models.PositiveIntegerField()
-    last_select_circle = models.IntegerField()
-    mac_print_info = models.TextField()
+    description = models.CharField(max_length=4000, null=True)
 
 #
 # Circle.Msデータベース形式で記録されるサークルのモデル
@@ -85,7 +103,7 @@ class List(models.Model):
 class ComiketCircle(models.Model):
                                                                         # ↓ Circle.Msデータベース作成時のSQL文
     comiket_number = models.PositiveSmallIntegerField()                 # comiketNo INTEGER not null, -- コミケ番号
-    number = models.IntegerField()                                      # id INTEGER not null,        -- サークルID
+    circle_id = models.IntegerField()                                   # id INTEGER not null,        -- サークルID
     page_number = models.PositiveIntegerField()                         # pageNo      INTEGER,        -- ページ番号         漏れの場合は 0
     cut_index = models.PositiveIntegerField()                           # cutIndex    INTEGER,        -- カットインデックス 漏れの場合は 0
     day = models.DateField()                                            # day         INTEGER,        -- 参加日             漏れの場合は 0

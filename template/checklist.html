@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}チェックリスト{% endblock %}
+
+{% block content %}
+  <h1>チェックリスト一覧</h1>
+
+  <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
+    <p>
+      CSVチェックリストを読み込み<br>
+      <input type="file" name="csv" id="form_csv">
+    </p>
+    <p>
+      <input type="submit" id="submit" value="読み込み">
+    </p>
+  </form>
+  <table border="1">
+    {% for list in lists %}
+      <tr>
+        <td>{{ list.id }}</td>
+        <td><a href="/checklist/{{ list.id }}/">{{ list.list_name }}</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+  <p><a href="/home/">ホームへ</a></p>
+  <p><a href="/logout/">ログアウト</a></p>
+{% endblock %}

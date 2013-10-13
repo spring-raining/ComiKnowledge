@@ -2,99 +2,99 @@
 
 import csv
 import json
+from django.forms import ModelForm
 
-from data.parser import parse_checklist_array
-from translator import *
-from container.list import *
-from container.original import *
+from ck.models import *
+from src.data.parser import parse_checklist_array
+from src.translator import *
+from src.container.list import *
 
 
-def import_list(path):
-    """
-    :param path: 読み込むcsvファイルパス
-    :return: 読み込み結果のタプル(OriginalMemberContainer, ListContainer)
-    """
-    text = parse_checklist_array(path)
-    pro = OriginalMemberContainer()
-    rtn = ListContainer()
+def import_list(csv_file, parent_user):
+    arr = parse_checklist_array(csv_file)
 
-    for line in text:
-        if line[0] == "Header":
+    l = List()
+    l.list_name = csv_file.name
+    l.parent_user = parent_user
+    sub = lambda x: "a" if x == "0" else ("b" if x == "1" else None)
+    for line in arr:
+        if line[0] == "Header" and len(line) >= 5:
             if line[1] != "ComicMarketCD-ROMCatalog":
-                raise
-            rtn.header_name = line[2]
-            rtn.header_encoding = line[3]
-            rtn.header_id = line[4]
-
-        elif line[0] == "Circle":
-            ci = CircleContainer()
+                continue
+            l.header_name = line[2]
+            l.header_encoding = line[3]
+            l.header_id = line[4]
+        elif line[0] == "LastSelect" and len(line) >= 3:
+            l.last_select_page = int(line[1])
+            l.last_select_circle = int(line[2])
+        elif line[0] == "MacPrintInfo" and len(line) >=2:
+            l.mac_print_info = line[1]
+    l.save()
+    for line in arr:
+        if line[0] == "Circle":
+            lc = ListCircle()
+            lc.parent_list = l
             try:
-                ci.number = int(line[1])
-                ci.color_number = int(line[2])
-                ci.page_number = int(line[3])
-                ci.cut_index = int(line[4])
-                ci.week = line[5]
-                ci.area = line[6]
-                ci.block = line[7]
-                ci.space_number = int(line[8])
-                ci.genre = int(line[9])
-                ci.name = line[10]
-                ci.name_yomigana = line[11]
-                ci.author = line[12]
-                ci.issue = line[13]
-                ci.url = line[14]
-                ci.mail = line[15]
-                ci.appendix = line[16]
-                ci.memo = line[17]
-                ci.map_x = int(line[18]) if line[18] else None
-                ci.map_y = int(line[19]) if line[19] else None
-                ci.layout = int(line[20]) if line[20] else None
-                ci.space_position = int(line[21])
-                ci.update = line[22]
-                ci.circlems_url = line[23]
-                ci.rss = line[24]
-                ci.rss_data = line[25]
+                lc.serial_number = int(line[1])
+                lc.color_number = int(line[2])
+                lc.page_number = int(line[3])
+                lc.cut_index = int(line[4])
+                lc.week = line[5]
+                lc.area = line[6]
+                lc.block = line[7]
+                lc.space_number = int(line[8])
+                lc.genre_code = int(line[9])
+                lc.circle_name = line[10]
+                lc.circle_name_yomigana = line[11]
+                lc.pen_name = line[12]
+                lc.book_name = line[13]
+                lc.url = line[14]
+                lc.mail = line[15]
+                lc.description = line[16]
+                lc.memo = line[17]
+                lc.map_x = int(line[18]) if line[18] else None
+                lc.map_y = int(line[19]) if line[19] else None
+                lc.layout = int(line[20]) if line[20] else None
+                lc.space_number_sub = sub(line[21])
+                lc.update_data = line[22]
+                lc.circlems_url = line[23]
+                lc.rss = line[24]
+                lc.rss_data = line[25]
             except IndexError:
                 pass
-
-            rtn.circle[int(line[1])] = ci
-
+            lc.save()
         elif line[0] == "UnKnown":
-            u = UnKnownContainer()
+            lu = ListUnKnown()
+            lu.parent_list = l
             try:
-                u.name = line[1]
-                u.name_yomigana = line[2]
-                u.author = line[3]
-                u.memo = line[4]
-                u.color = to_rgb_color(line[5])
-                u.issue = line[6]
-                u.url = line[7]
-                u.mail = line[8]
-                u.appendix = line[9]
-                u.update = line[10]
-                u.circlems_url = line[11]
-                u.rss = line[12]
+                lu.circle_name = line[1]
+                lu.circle_name_yomigana = line[2]
+                lu.pen_name = line[3]
+                lu.memo = line[4]
+                lu.color_number = to_rgb_color(line[5])
+                lu.book_name = line[6]
+                lu.url = line[7]
+                lu.mail = line[8]
+                lu.description = line[9]
+                lu.update_data = line[10]
+                lu.circlems_url = line[11]
+                lu.rss = line[12]
             except IndexError:
                 pass
-            rtn.unknown[line[1]] = u
-
+            lu.save()
         elif line[0] == "Color":
-            co = ColorContainer()
-            co.color_number = int(line[1])
-            co.check_color = to_rgb_color(line[2])
-            co.print_color = to_rgb_color(line[3])
-            co.description = line[4]
-            rtn.color[int(line[1])] = co
-        elif line[0] == "LastSelect":
-            rtn.last_select_page = int(line[1])
-            rtn.last_select_circle = int(line[2])
-        elif line[0] == "MacPrintInfo":
-            rtn.mac_print_info = line[1]
-        elif line[0] == "Co-Navigator":
-            if line[1] == "Profile":
-                pro.import_json(line[2])
+            lc = ListColor()
+            lc.parent_list = l
+            try:
+                lc.color_number = int(line[1])
+                lc.check_color = to_rgb_color(line[2])
+                lc.print_color = to_rgb_color(line[3])
+                lc.description = line[4]
+            except IndexError:
+                pass
+            lc.save()
+    return l
 
-    return (pro, rtn)
 
 
 def save_list(path, lists, members, color, profile=None):
@@ -228,6 +228,30 @@ def save_list(path, lists, members, color, profile=None):
                          json.dumps(profile.__dict__)))
 
     f.close()
+
+
+def merge_list(m_list, apply_color=0, apply_header=0):
+    rtn = ListContainer()
+    rtn.header_encoding = "UTF-8"
+    rtn.header_name = m_list[apply_header].header_name
+    rtn.header_id = "Co-Navigator"
+    rtn.color = m_list[apply_color].color
+
+    for i in m_list:
+        if str(i) != "ListContainer":
+            continue
+
+        # i = ListContainer() # have to delete
+        for j in i.circle:
+            # j = CircleContainer() # have to delete
+            if j in rtn.circle:
+                if rtn.circle[j].color_number > i.circle[j].color_number:
+                    rtn.circle[j].color_number = i.circle[j].color_number
+                #TODO configで優先する色設定を変えられるようにする
+                rtn.circle[j].memo += "\n" + i.circle[j].memo
+            else:
+                rtn.circle[j] = i.circle[j]
+    return rtn
 
 
 if __name__ == "__main__":

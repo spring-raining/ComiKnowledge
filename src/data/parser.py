@@ -28,9 +28,11 @@ def parse_tab_array(path, encoding):
     finally:
         decoded.close()
 
-def parse_checklist_array(path):
-    f = open(path, "r")
-    reader = csv.reader(f)
+def parse_checklist_array(csv_file):
+    """
+    チェックリストの文字コードを確認して配列に変換する
+    """
+    reader = csv.reader(csv_file)
     ret = []
     encoding = "unknown"
 
