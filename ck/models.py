@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+import re
+from django.core import validators
 from django.db import models
 from django.contrib.auth import models as auth_models
 
@@ -11,11 +14,28 @@ ENCODE_CHOICES = (
 
 
 #
+# グループの拡張モデル
+#
+class CKGroup(auth_models.Group):
+    group_id = models.CharField(max_length=30, unique=True,
+                                validators=[validators.RegexValidator(re.compile('^\w+$'))])
+
+#
+# ユーザーの拡張モデル
+#
+class CKUser(auth_models.User):
+    ck_groups = models.ManyToManyField(CKGroup, blank=True)
+    circlems_access_token = models.CharField(max_length=50, null=True)
+    circlems_refresh_token = models.CharField(max_length=50, null=True)
+
+#
 # CSVリストのモデル
 #
 class List(models.Model):
-    parent_user = models.ForeignKey(auth_models.User)
+    parent_user = models.ForeignKey(CKUser)
     list_name = models.CharField(max_length=256)
+    write_at = models.DateTimeField(auto_now=True)
+
     header_name = models.CharField(max_length=256)
     header_encoding = models.CharField(max_length=20)
     header_id = models.CharField(max_length=256, null=True)
@@ -31,6 +51,7 @@ class List(models.Model):
 #
 class ListCircle(models.Model):
     parent_list = models.ForeignKey(List)
+
     serial_number = models.PositiveIntegerField()
     color_number = models.PositiveSmallIntegerField(default=0)
     page_number = models.PositiveIntegerField(null=True)
@@ -71,6 +92,7 @@ class ListCircle(models.Model):
 #
 class ListUnKnown(models.Model):
     parent_list = models.ForeignKey(List)
+
     circle_name = models.CharField(max_length=100)
     circle_name_yomigana = models.CharField(max_length=100, null=True)
     pen_name = models.CharField(max_length=100, null=True)
@@ -92,6 +114,7 @@ class ListUnKnown(models.Model):
 #
 class ListColor(models.Model):
     parent_list = models.ForeignKey(List)
+
     color_number = models.PositiveSmallIntegerField()
     check_color = models.CharField(max_length=6)
     print_color = models.CharField(max_length=6)
@@ -151,6 +174,7 @@ class ComiketDate(models.Model):
                                                                         # month   INTEGER,            -- 月
                                                                         # day     INTEGER,            -- 日
     weekday = models.CharField(max_length=1)                            # weekday INTEGER,            -- 曜日 (1:日 ～ 7:土)
+
 
 # define.py
 

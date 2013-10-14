@@ -14,6 +14,8 @@ urlpatterns = patterns('',
     url(r'^logout/$', 'ck.views.logout'),
     url(r'^checklist/$', 'ck.views.checklist'),
     url(r'^checklist/(?P<list_id>\d+)/$', 'ck.views.checklist_edit'),
+    url(r'^group/$', 'ck.views.group'),
+    url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
     url(r'', include('social_auth.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
