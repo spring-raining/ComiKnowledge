@@ -8,6 +8,7 @@ from ck.models import *
 from src.data.parser import parse_checklist_array
 from src.translator import *
 from src.container.list import *
+from src.utils import generate_rand_str
 
 
 def import_list(csv_file, parent_user):
@@ -16,6 +17,13 @@ def import_list(csv_file, parent_user):
     l = List()
     l.list_name = csv_file.name
     l.parent_user = parent_user
+    while True:
+        g = generate_rand_str(8)
+        try:
+            List.objects.get(list_id=g)
+        except:
+            break
+    l.list_id = g
     sub = lambda x: "a" if x == "0" else ("b" if x == "1" else None)
     for line in arr:
         if line[0] == "Header" and len(line) >= 5:
@@ -95,6 +103,23 @@ def import_list(csv_file, parent_user):
             lc.save()
     return l
 
+
+def delete_list(list_id):
+    try:
+        l = List.objects.get(list_id=list_id)
+        l.delete()
+        return True
+    except:
+        return False
+
+
+def delete_circle(circle_id):
+    try:
+        c =ListCircle.objects.get(id=circle_id)
+        c.delete()
+        return True
+    except:
+        return False
 
 
 def save_list(path, lists, members, color, profile=None):

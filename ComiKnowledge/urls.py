@@ -9,11 +9,12 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^$', 'ck.views.index'),
+    url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
     url(r'^home/$', 'ck.views.home'),
     url(r'^login/$', 'ck.views.login'),
     url(r'^logout/$', 'ck.views.logout'),
     url(r'^checklist/$', 'ck.views.checklist'),
-    url(r'^checklist/(?P<list_id>\d+)/$', 'ck.views.checklist_edit'),
+    url(r'^checklist/(?P<list_id>\w+)/$', 'ck.views.checklist_edit'),
     url(r'^group/$', 'ck.views.group'),
     url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
     url(r'', include('social_auth.urls')),

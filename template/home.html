@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 
+{% block navbar-contents %}
+{% endblock %}
+
 {% block content %}
-  <h1>ComiKnowledge</h1>
-  {{ test }}
+  <p>{{ test }}</p>
+  {% if invited_groups %}
+    <a href="/group/">
+    {% for group in invited_groups %}{{ group.name }} {% endfor %}
+    に招待されています！！！</a>
+  {% endif %}
+
   <div>
   <h3>User data:</h3>
-    <table>
+    <table class="table">
       <tr class="odd"><th>Id:</th> <td>{{ user.id }}</td></tr>
       <tr class="even"><th>Username:</th> <td>{{ user.username }}</td></tr>
       <tr class="odd"><th>Email:</th> <td>{{ user.email|default:"Not provided" }}</td></tr>

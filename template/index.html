@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>ComiKnowledge</h1>
-  {{ test }}
-  <p><a href="{% url "socialauth_begin" "twitter" %}">Twitterアカウントでログイン</a></p>
+<div class="jumbotron">
+  <div class="container">
+    <h2>{{ test }}</h2>
+    <p><a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-primary">Twitterアカウントでログイン</a></p>
+  </div>
+</div>
 {% endblock %}

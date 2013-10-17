@@ -13,7 +13,7 @@ def check_unique_group_id(group_id):
     except CKGroup.DoesNotExist:
         return group_id
 
-def generate_rand_str(length=6):
+def generate_rand_str(length):
     alphabets = string.digits + string.letters
     return "".join(random.choice(alphabets) for i in xrange(length))
 

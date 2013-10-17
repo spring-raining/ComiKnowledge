@@ -3,22 +3,22 @@
 {% block title %}チェックリスト{% endblock %}
 
 {% block content %}
-  <h1>チェックリスト一覧</h1>
-
+  <h3>チェックリスト読み込み</h3>
   <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
-    <p>
-      CSVチェックリストを読み込み<br>
+    <div class="form-group">
+      <label for="form_csv">CSVチェックリストを読み込み</label>
       <input type="file" name="csv" id="form_csv">
-    </p>
-    <p>
-      <input type="submit" id="submit" value="読み込み">
-    </p>
+    </div>
+    <input class="btn btn-default" type="submit" id="submit" value="読み込み">
   </form>
-  <table border="1">
+
+  <h3>チェックリスト一覧</h3>
+  <table class="table">
     {% for list in lists %}
       <tr>
-        <td>{{ list.id }}</td>
-        <td><a href="/checklist/{{ list.id }}/">{{ list.list_name }}</a></td>
+        <td>{{ list.list_id }}</td>
+        <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
+        <td><a href="/checklist?command=delete&id={{ list.list_id }}">削除</a></td>
       </tr>
     {% endfor %}
   </table>

@@ -14,25 +14,37 @@ ENCODE_CHOICES = (
 
 
 #
-# グループの拡張モデル
-#
-class CKGroup(auth_models.Group):
-    group_id = models.CharField(max_length=30, unique=True,
-                                validators=[validators.RegexValidator(re.compile('^\w+$'))])
-
-#
 # ユーザーの拡張モデル
 #
 class CKUser(auth_models.User):
-    ck_groups = models.ManyToManyField(CKGroup, blank=True)
     circlems_access_token = models.CharField(max_length=50, null=True)
     circlems_refresh_token = models.CharField(max_length=50, null=True)
+
+#
+# グループのモデル
+#
+class CKGroup(models.Model):
+    name = models.CharField(max_length=30)
+    group_id = models.SlugField(max_length=30, unique=True)
+    members = models.ManyToManyField(CKUser, through="Relation", null=True)
+    description = models.CharField(max_length=4000, null=True)
+
+#
+# グループとユーザーの関係を示す中間モデル
+#
+class Relation(models.Model):
+    ckuser = models.ForeignKey(CKUser)
+    ckgroup = models.ForeignKey(CKGroup)
+    verification = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(null=True)
 
 #
 # CSVリストのモデル
 #
 class List(models.Model):
     parent_user = models.ForeignKey(CKUser)
+    list_id = models.CharField(max_length=8, unique=True,
+                                validators=[validators.RegexValidator(re.compile('^\w+$'))])
     list_name = models.CharField(max_length=256)
     write_at = models.DateTimeField(auto_now=True)
 

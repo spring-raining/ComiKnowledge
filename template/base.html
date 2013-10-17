@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}hogehoge{% endblock %}</title>
 
-    {% block script %}{% endblock %}
-  </head>
+    <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+    <script>
+{% block script %}{% endblock %}
+    </script>
+</head>
 
-  <body>
+<body>
+  <nav class="navbar navbar-default">
+    <div class="navbar-header">
+      <a href="/" class="navbar-brand">ComiKnowledge</a>
+{% block navbar-contents %}{% endblock %}
+    </div>
+  </nav>
+
     <div id="header">
-      {% block header %}{% endblock %}
+{% block header %}{% endblock %}
     </div>
 
-    <div id="content">
-      {% block content %}{% endblock %}
+    <div id="content" class="container">
+{% block content %}{% endblock %}
     </div>
 
     <div id="footer">
-      {% block footer %}{% endblock %}
+{% block footer %}{% endblock %}
     </div>
-  </body>
+</body>
 </html>

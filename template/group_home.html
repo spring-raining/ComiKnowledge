@@ -7,28 +7,37 @@
   <div>
   <h2>メンバーを追加</h2>
     <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
-      <div>
-        追加するメンバーのTwitter IDを入力<br>
-        <input type="text" name="name" id="form_name">
+      <div class="form-group">
+        <label for="form_name">追加するメンバーのTwitter IDを入力</label>
+        <input class="form-control"type="text" name="name" id="form_name">
       </div>
       <div>
-        <input type="submit" id="submit" value="読み込み" disabled>
+        <input class="btn btn-default" type="submit" id="submit" value="読み込み">
       </div>
     </form>
   </div>
   <div>
     <h2>メンバー一覧</h2>
-    <table border="1">
-      {% for member in members %}
-        <tr>
-          <td>{{ member.id }}</td>
-          <td>{{ member.username }}</td>
-          <td>{{ member.first_name }}</td>
-        </tr>
-        {% for list in member.lists %}
-        <tr><td></td><td>{{ list.id }}</td><td>{{ list.list_name }}</td></tr>
-        {% endfor %}
+    <table class="table table-bordered">
+    <tr><td colspan="3">招待中のメンバー</td></tr>
+    {% for member in inviting_members %}
+      <tr>
+        <td>{{ member.id }}</td>
+        <td>{{ member.username }}</td>
+        <td>{{ member.first_name }}</td>
+      </tr>
+    {% endfor %}
+    <tr><td colspan="3">参加メンバー</td></tr>
+    {% for member in members %}
+      <tr>
+        <td>{{ member.id }}</td>
+        <td>{{ member.username }}</td>
+        <td>{{ member.first_name }}</td>
+      </tr>
+      {% for list in member.lists %}
+      <tr><td></td><td>{{ list.list_id }}</td><td>{{ list.list_name }}</td></tr>
       {% endfor %}
+    {% endfor %}
     </table>
   </div>
   <div><a href="/home/">ホームへ</a></div>
