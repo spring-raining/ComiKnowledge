@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}チェックリストを統合{% endblock %}
+
+{% block content %}
+  <div>
+    <h2>統合するチェックリストを選択</h2>
+    <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
+      <div>
+        <input class="btn btn-default" type="submit" id="submit" value="作成">
+      </div>
+      <table class="table table-bordered table-condensed">
+      {% for member in members %}
+        <tr>
+          <td colspan="2">{{ member.id }}</td>
+          <td>{{ member.username }}</td>
+          <td>{{ member.first_name }}</td>
+        </tr>
+        {% for list in member.lists %}
+        <tr>
+          <td>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="list[]" value={{ list.id }}>
+              </label>
+            </div>
+          </td>
+          <td>
+            <div class="radio">
+              <label>
+                <input type="radio" name="first" value="{{ list.id }}">
+              </label>
+            </div>
+          </td>
+          <td>{{ list.list_id }}</td><td>{{ list.list_name }}</td></tr>
+        {% endfor %}
+      {% endfor %}
+      </table>
+    </form>
+  </div>
+  <div><a href="/home/">ホームへ</a></div>
+  <div><a href="/logout/">ログアウト</a></div>
+{% endblock %}

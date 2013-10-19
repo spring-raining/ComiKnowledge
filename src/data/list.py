@@ -5,10 +5,11 @@ import json
 from django.forms import ModelForm
 
 from ck.models import *
+import src
 from src.data.parser import parse_checklist_array
 from src.translator import *
 from src.container.list import *
-from src.utils import generate_rand_str
+from src.utils import generate_rand_str, convert_to_hankaku
 
 
 def import_list(csv_file, parent_user):
@@ -42,6 +43,7 @@ def import_list(csv_file, parent_user):
         if line[0] == "Circle":
             lc = ListCircle()
             lc.parent_list = l
+            lc.added_by = parent_user
             try:
                 lc.serial_number = int(line[1])
                 lc.color_number = int(line[2])
@@ -49,7 +51,7 @@ def import_list(csv_file, parent_user):
                 lc.cut_index = int(line[4])
                 lc.week = line[5]
                 lc.area = line[6]
-                lc.block = line[7]
+                lc.block = convert_to_hankaku(line[7])
                 lc.space_number = int(line[8])
                 lc.genre_code = int(line[9])
                 lc.circle_name = line[10]
@@ -122,162 +124,145 @@ def delete_circle(circle_id):
         return False
 
 
-def save_list(path, lists, members, color, profile=None):
-    """
-    :param path: 出力先パス
-    :param lists: {id:ListContainer}の辞書
-    :param members: {id:OriginalMemberContainer}の辞書
-    :param color: {id:ColorContainer}の辞書
-    :param profile: 出力OriginalProfileContainer(デフォルト:None)
-    """
-    out = ListContainer()
-    f = open(path, mode="w")
-    writer = csv.writer(f, delimiter=",", quotechar='"')
-    out.header_name = "ComicMarket84"
+# 統合時、色などのリスト共通情報はlists[0]のものを保存する
+def merge_list(lists, user):
+    l = List()
+    l.list_name = lists[0].list_name
+    l.parent_user = lists[0].parent_user
+    while True:
+        g = generate_rand_str(8)
+        try:
+            List.objects.get(list_id=g)
+        except:
+            break
+    l.list_id = g
+    l.header_name = "ComicMarketCD-ROMCatalog"
+    l.header_encoding = "UTF-8"
+    l.header_id = "%s %s" % (src.APP_NAME, str(src.VERSION))
+    l.last_select_page = None
+    l.last_select_circle = None
+    l.mac_print_info = None
+    l.save()
+    for lc in lists[0].listcolor_set.all():
+        nlc = ListColor()
+        nlc.parent_list = l
+        nlc.color_number = lc.color_number
+        nlc.check_color = lc.check_color
+        nlc.print_color = lc.print_color
+        nlc.description = lc.description
+        nlc.save()
+    for _list in lists:
+        for lc in _list.listcircle_set.all():
+            nlc = ListCircle()
+            nlc.parent_list = l
+            nlc.added_by = lc.added_by
+            nlc.serial_number = lc.serial_number
+            nlc.color_number = lc.color_number
+            nlc.page_number = lc.page_number
+            nlc.cut_index = lc.cut_index
+            nlc.week = lc.week
+            nlc.area = lc.area
+            nlc.block = lc.block
+            nlc.space_number = lc.space_number
+            nlc.genre_code = lc.genre_code
+            nlc.circle_name = lc.circle_name
+            nlc.circle_name_yomigana = lc.circle_name_yomigana
+            nlc.pen_name = lc.pen_name
+            nlc.book_name = lc.book_name
+            nlc.url = lc.url
+            nlc.mail = lc.mail
+            nlc.description = lc.description
+            nlc.memo = lc.memo
+            nlc.map_x = lc.map_x
+            nlc.map_y = lc.map_y
+            nlc.layout = lc.layout
+            nlc.space_number_sub = lc.space_number_sub
+            nlc.update_data = lc.update_data
+            nlc.circlems_url = lc.circlems_url
+            nlc.rss = lc.rss
+            nlc.rss_data = lc.rss_data
+            nlc.save()
+        for lu in _list.listunknown_set.all():
+            nlu = ListUnKnown()
+            nlu.parent_list = l
+            nlu.circle_name = lu.circle_name
+            nlu.circle_name_yomigana = lu.circle_name_yomigana
+            nlu.pen_name = lu.pen_name
+            nlu.memo = lu.memo
+            nlu.color_number = lu.color_number
+            nlu.book_name = lu.book_name
+            nlu.url = lu.url
+            nlu.mail = lu.mail
+            nlu.description = lu.description
+            nlu.update_data = lu.update_data
+            nlu.circlems_url = lu.circlems_url
+            nlu.rss = lu.rss
+            nlu.save()
+    return l
 
-    for key, li in lists.items():
-        #li = ListContainer()
-        for k, v in li.circle.items():
-            if k in out.circle:
-                #out.circle[k].memo += "\n" + v.memo + "(" + members[key].handle + ")"
-                if out.circle[k].color_number > v.color_number and not v.color_number == 0:
-                    out.circle[k].color_number = v.color_number
-            else:
-                out.circle[k] = v
-                #out.circle[k].memo += "(" + members[key].handle + ")"
-        for k, v in li.unknown.items():
-            out.unknown[k] = v
 
-    writer.writerow(("Header",
+def output_list(response, list_id, memo_template="{memo} ", color_order=(1,2,3,4,5,6,7,8,9,)):
+    writer = csv.writer(response, delimiter=",", quotechar='"')
+    out_list = List.objects.get(list_id=list_id)
+    writer.writerow(["Header",
                      "ComicMarketCD-ROMCatalog",
-                     out.header_name.encode("utf-8"),
-                     "UTF-8"))
-                     #APP_NAME + " " + str(VERSION)))
-
-    for k, v in sorted(out.circle.items()):
-        #v = CircleContainer()
-        writer.writerow(("Circle",
-                         v.number,
-                         v.color_number,
-                         v.page_number,
-                         v.cut_index,
-                         v.week.encode("utf-8")
-                         if v.week else "",
-                         v.area.encode("utf-8")
-                         if v.area else "",
-                         v.block.encode("utf-8")
-                         if v.block else "",
-                         v.space_number,
-                         v.genre,
-                         v.name.encode("utf-8")
-                         if v.name else "",
-                         v.name_yomigana.encode("utf-8")
-                         if v.name_yomigana else "",
-                         v.author.encode("utf-8")
-                         if v.author else "",
-                         v.issue.encode("utf-8")
-                         if v.issue else "",
-                         v.url.encode("utf-8")
-                         if v.url else "",
-                         v.mail.encode("utf-8")
-                         if v.mail else "",
-                         v.appendix.encode("utf-8")
-                         if v.appendix else "",
-                         v.memo.encode("utf-8")
-                         if v.memo else "",
-                         v.map_x
-                         if not v.map_x is None else "",
-                         v.map_y
-                         if not v.map_y is None else "",
-                         v.layout
-                         if not v.layout is None else "",
-                         v.space_position,
-                         v.update.encode("utf-8")
-                         if v.update else "",
-                         v.circlems_url.encode("utf-8")
-                         if v.circlems_url else "",
-                         v.rss.encode("utf-8")
-                         if v.rss else "",
-                         v.rss_data.encode("utf-8")
-                         if v.rss_data else ""))
-
-    for k, v in out.unknown.items():
-        #v =UnKnownContainer()
-        writer.writerow(("UnKnown",
-                         v.name.encode("utf-8")
-                         if v.name else "",
-                         v.name_yomigana.encode("utf-8")
-                         if v.name_yomigana else "",
-                         v.author.encode("utf-8")
-                         if v.author else "",
-                         v.memo.encode("utf-8")
-                         if v.memo else "",
-                         v.color.encode("utf-8")
-                         if v.color else "",
-                         v.issue.encode("utf-8")
-                         if v.issue else "",
-                         v.url.encode("utf-8")
-                         if v.url else "",
-                         v.mail.encode("utf-8")
-                         if v.mail else "",
-                         v.appendix.encode("utf-8")
-                         if v.appendix else "",
-                         v.update.encode("utf-8")
-                         if v.update else "",
-                         v.circlems_url.encode("utf-8")
-                         if v.circlems_url else "",
-                         v.rss.encode("utf-8")
-                         if v.rss else ""))
-
-    for k, v in sorted(color.items()):
-        #v = ColorContainer()
-        writer.writerow(("Color",
-                         v.color_number,
-                         to_bgr_color(v.check_color).encode("utf-8"),
-                         to_bgr_color(v.print_color).encode("utf-8"),
-                         v.description.encode("utf-8")
-                         if v.description else ""))
-
-    if out.last_select_page and out.last_select_circle:
-        writer.writerow(("LastSelect",
-                         out.last_select_page,
-                         out.last_select_circle))
-
-    if out.mac_print_info:
-        writer.writerow(("MacPrintInfo", out.mac_print_info.encode("utf-8")))
-
-    if profile:
-        #profile = OriginalMemberContainer()
-        writer.writerow(("Co-Navigator",
-                         "Profile",
-                         json.dumps(profile.__dict__)))
-
-    f.close()
-
-
-def merge_list(m_list, apply_color=0, apply_header=0):
-    rtn = ListContainer()
-    rtn.header_encoding = "UTF-8"
-    rtn.header_name = m_list[apply_header].header_name
-    rtn.header_id = "Co-Navigator"
-    rtn.color = m_list[apply_color].color
-
-    for i in m_list:
-        if str(i) != "ListContainer":
-            continue
-
-        # i = ListContainer() # have to delete
-        for j in i.circle:
-            # j = CircleContainer() # have to delete
-            if j in rtn.circle:
-                if rtn.circle[j].color_number > i.circle[j].color_number:
-                    rtn.circle[j].color_number = i.circle[j].color_number
-                #TODO configで優先する色設定を変えられるようにする
-                rtn.circle[j].memo += "\n" + i.circle[j].memo
-            else:
-                rtn.circle[j] = i.circle[j]
-    return rtn
-
+                     src.HEADER_NAME,
+                     "UTF-8",
+                     "%s %s" % (src.APP_NAME, str(src.VERSION))])
+    for i in out_list.listcolor_set.all():
+        writer.writerow(["Color",
+                         i.color_number,
+                         to_bgr_color(i.check_color),
+                         to_bgr_color(i.print_color),
+                         i.description])
+    out_circles = {}
+    for i in out_list.listcircle_set.all():
+        if i.serial_number in out_circles:
+            v, m, c = out_circles[i.serial_number]
+            m += memo_template\
+                .replace("{memo}", i.memo)\
+                .replace("{username}", i.added_by.first_name)\
+                .replace("{userid}", i.added_by.username)
+            _c = i.color_number if color_order.index(i.color_number) < color_order.index(c) else c
+            out_circles[i.serial_number] = (v, m, _c)
+        else:
+            m = memo_template\
+                .replace("{memo}", i.memo)\
+                .replace("{username}", i.added_by.first_name)\
+                .replace("{userid}", i.added_by.username)
+            out_circles[i.serial_number] = (i, m, i.color_number)
+    sub = lambda x: "0" if x == "a" else ("1" if x == "b" else "")
+    enc_utf8 = lambda x: x.encode("utf-8") if x else ""
+    to_str = lambda x: str(x).encode("utf-8") if x is not None else ""
+    for key, value in out_circles.items():
+        v, m, c = value
+        writer.writerow(["Circle",
+                         to_str(v.serial_number),
+                         to_str(c),
+                         to_str(v.page_number),
+                         to_str(v.cut_index),
+                         enc_utf8(v.week),
+                         enc_utf8(v.area),
+                         enc_utf8(v.block),
+                         to_str(v.space_number),
+                         to_str(v.genre_code),
+                         enc_utf8(v.circle_name),
+                         enc_utf8(v.circle_name_yomigana),
+                         enc_utf8(v.pen_name),
+                         enc_utf8(v.book_name),
+                         enc_utf8(v.url),
+                         enc_utf8(v.mail),
+                         enc_utf8(v.description),
+                         enc_utf8(m),
+                         to_str(v.map_x),
+                         to_str(v.map_y),
+                         to_str(v.layout),
+                         sub(v.space_number_sub),
+                         enc_utf8(v.update_data),
+                         enc_utf8(v.circlems_url),
+                         enc_utf8(v.rss),
+                         enc_utf8(v.rss_data)])
+    return response
 
 if __name__ == "__main__":
     # テストは書いちゃらめええええ

@@ -43,7 +43,7 @@ def parse_checklist_array(csv_file):
             if l[3] == "UTF-8":
                 encoding = "utf-8"
             elif l[3] == "Shift_JIS":
-                encoding = "shift-jis"
+                encoding = "cp932"
             elif l[3] == "EUC-JP":
                 encoding = "euc-jp"
             elif l[3] == "ISO-2022-JP":

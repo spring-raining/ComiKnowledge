@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import re
-from django.forms import ValidationError
+from django.db import IntegrityError
 
 from ck.models import CKGroup, CKUser, Relation
-from src.utils import check_unique_group_id
+from src.error import FormBlankError, FormDuplicateError
 
 def create_group(group_name, group_id):
-    g = CKGroup(group_id=group_id, name=group_name)
-    #g.full_clean()
-    g.save()
-    return g
+    if not group_name:
+        raise FormBlankError("group_name")
+    if not group_id:
+        raise FormBlankError("group_id")
+    try:
+        g = CKGroup(group_id=group_id, name=group_name)
+        g.save()
+        return g
+    except IntegrityError:
+        raise FormDuplicateError("group_id")
 
 # グループにユーザーを強制的に追加(verification=True)
 def add_member(ckgroup, ckuser):

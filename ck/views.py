@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
+from social_auth.db.django_models import UserSocialAuth
 
+from ComiKnowledge import settings
 from ck.models import *
+from src.api.twitter import *
 from src.data.list import *
 from src.data.group import *
 
@@ -29,6 +34,11 @@ def home(request):
         if r.verification == False:
             invited_groups.append(i)
 
+    # サムネイル更新
+    if not request.user.thumbnail or not os.path.exists(os.path.join(settings.MEDIA_ROOT, request.user.thumbnail.name)):
+        usa = UserSocialAuth.objects.get(user_id=request.user.id)
+        save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
+
     ctx = RequestContext(request,
                          {"test": "hello! now login",
                           "user": request.user,
@@ -45,6 +55,10 @@ def checklist(request):
         if request.GET["command"] == "delete":
             delete_list(request.GET["id"])
             return HttpResponseRedirect("/checklist/")
+        if request.GET["command"] == "save":
+            response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
+            response["Content-Disposition"] = "attachment; filename=%s.csv" % List.objects.get(list_id=request.GET["id"]).list_name
+            return output_list(response, request.GET["id"], memo_template="{memo}({userid}) ")
     c = RequestContext(request,
                        {"lists": request.user.list_set.all()})
     return render_to_response("checklist.html", c)
@@ -71,9 +85,18 @@ def checklist_edit(request, list_id):
 
 @login_required
 def group(request):
+    alert_code = 0
+    created_group = None
     if request.method == "POST":
-        g = create_group(request.POST["group_name"], request.POST["group_id"])
-        add_member(g, request.user)
+        try:
+            g = create_group(request.POST["group_name"], request.POST["group_id"])
+            add_member(g, request.user)
+            alert_code = 1
+            created_group = g
+        except FormBlankError:
+            alert_code = 2
+        except FormDuplicateError:
+            alert_code = 3
 
     if request.GET.has_key("command"):
         if request.GET["command"] == "join":
@@ -89,7 +112,9 @@ def group(request):
             invited_groups.append(i)
     c = RequestContext(request,
                        {"groups": groups,
-                        "invited_groups": invited_groups})
+                        "invited_groups": invited_groups,
+                        "alert_code": alert_code,
+                        "created_group": created_group})
     return render_to_response("group.html", c)
 
 
@@ -116,6 +141,11 @@ def group_home(request, group_id):
                 pass
         except CKUser.DoesNotExist:                                     # ユーザーがいない
             pass
+
+    if request.GET.has_key("command"):
+        if request.GET["command"] == "leave":
+            pass
+
     members = []
     inviting_members = []
     for i in g.members.all():
@@ -131,6 +161,44 @@ def group_home(request, group_id):
                         "members": members,
                         "inviting_members": inviting_members})
     return render_to_response("group_home.html", c)
+
+
+@login_required
+def group_checklist_create(request, group_id):
+    if group_id is None:
+        return HttpResponseRedirect("/group/")
+    try:
+        g = CKGroup.objects.get(group_id=group_id)
+    except:                                                             # group_idがおかしい
+        raise Http404
+    if not g.members.filter(id=request.user.id):                        # ユーザーがグループに属していない
+        raise Http404
+    r = Relation.objects.get(ckgroup=g, ckuser=request.user)            # ユーザーがまだグループに参加していない
+    if r.verification == False:
+        raise Http404
+
+    if request.method == "POST":
+        lists = request.POST.getlist("list[]")
+        first = request.POST["first"]
+        if lists and first and first in lists:
+            del lists[lists.index(first)]
+            lists.insert(0, first)
+            l = []
+            for i in lists:
+                l.append(List.objects.get(id=i))
+            merge_list(l, request.user)
+
+    members = []
+    for i in g.members.all():
+        r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
+        if r.verification == True:
+            members.append(i)
+    for member in members:
+        member.lists = member.list_set.all()
+    c = RequestContext(request,
+                       {"group": g,
+                        "members": members})
+    return render_to_response("group_checklist_create.html", c)
 
 
 def login(request):

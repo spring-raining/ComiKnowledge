@@ -10,6 +10,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^$', 'ck.views.index'),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
+    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     url(r'^home/$', 'ck.views.home'),
     url(r'^login/$', 'ck.views.login'),
     url(r'^logout/$', 'ck.views.logout'),
@@ -17,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^checklist/(?P<list_id>\w+)/$', 'ck.views.checklist_edit'),
     url(r'^group/$', 'ck.views.group'),
     url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
+    url(r'^group/(?P<group_id>\w+)/create$', 'ck.views.group_checklist_create'),
     url(r'', include('social_auth.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

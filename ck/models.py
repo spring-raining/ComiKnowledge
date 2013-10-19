@@ -17,6 +17,7 @@ ENCODE_CHOICES = (
 # ユーザーの拡張モデル
 #
 class CKUser(auth_models.User):
+    thumbnail = models.ImageField(upload_to="thumbnails", null=True)
     circlems_access_token = models.CharField(max_length=50, null=True)
     circlems_refresh_token = models.CharField(max_length=50, null=True)
 
@@ -25,7 +26,7 @@ class CKUser(auth_models.User):
 #
 class CKGroup(models.Model):
     name = models.CharField(max_length=30)
-    group_id = models.SlugField(max_length=30, unique=True)
+    group_id = models.SlugField(max_length=30, unique=True, blank=False)
     members = models.ManyToManyField(CKUser, through="Relation", null=True)
     description = models.CharField(max_length=4000, null=True)
 
@@ -63,6 +64,7 @@ class List(models.Model):
 #
 class ListCircle(models.Model):
     parent_list = models.ForeignKey(List)
+    added_by = models.ForeignKey(CKUser)
 
     serial_number = models.PositiveIntegerField()
     color_number = models.PositiveSmallIntegerField(default=0)

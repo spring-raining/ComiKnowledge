@@ -13,6 +13,7 @@
 
   <div>
   <h3>User data:</h3>
+    {% if user.thumbnail %}<img src="{{ user.thumbnail.url }}" />{% endif %}
     <table class="table">
       <tr class="odd"><th>Id:</th> <td>{{ user.id }}</td></tr>
       <tr class="even"><th>Username:</th> <td>{{ user.username }}</td></tr>
