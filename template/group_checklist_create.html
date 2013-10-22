@@ -2,42 +2,80 @@
 
 {% block title %}チェックリストを統合{% endblock %}
 
+{% block style %}
+  <style>
+      .members {
+          margin: 10px;
+      }
+  </style>
+{% endblock %}
+
 {% block content %}
   <div>
-    <h2>統合するチェックリストを選択</h2>
-    <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
-      <div>
-        <input class="btn btn-default" type="submit" id="submit" value="作成">
+    <h2>チェックリストを統合</h2>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">チェックリストの統合設定</h3>
       </div>
-      <table class="table table-bordered table-condensed">
-      {% for member in members %}
-        <tr>
-          <td colspan="2">{{ member.id }}</td>
-          <td>{{ member.username }}</td>
-          <td>{{ member.first_name }}</td>
-        </tr>
-        {% for list in member.lists %}
-        <tr>
-          <td>
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" name="list[]" value={{ list.id }}>
-              </label>
-            </div>
-          </td>
-          <td>
-            <div class="radio">
-              <label>
-                <input type="radio" name="first" value="{{ list.id }}">
-              </label>
-            </div>
-          </td>
-          <td>{{ list.list_id }}</td><td>{{ list.list_name }}</td></tr>
-        {% endfor %}
-      {% endfor %}
-      </table>
-    </form>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-3" for="form_name">チェックリストの名前</label>
+          <div class="col-sm-7">
+            <input class="form-control" type="text" name="list_name" id="form_name" maxlength="30" placeholder="30文字">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">統合するチェックリストを選択</h3>
+      </div>
+      <div class="panel-body">
+      {% for member in members %}{% if member.lists %}
+        <div class="row members">
+          <div class="col-xs-2">
+            {% if member.thumbnail %}
+              <img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive">
+            {% endif %}
+          </div>
+          <div class="col-xs-10">
+            <table class="table table-condensed">
+            <tr>
+              <td colspan="">{{ member.first_name }}</td>
+              <td width="80">統合リスト</td>
+              <td width="80">色設定</td>
+            </tr>
+            {% for list in member.lists %}
+              <tr>
+                <td>{{ list.list_name }}</td>
+                <td>
+                    <label>
+                      <input type="checkbox" name="list[]" value={{ list.id }}>
+                    </label>
+                </td>
+                <td>
+                    <label>
+                      <input type="radio" name="first" value="{{ list.id }}">
+                    </label>
+                </td>
+              </tr>
+            {% endfor %}
+            </table>
+          </div>
+        </div>
+      {% endif %}{% endfor %}
+      </div>
+    </div>
   </div>
+
+  <div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+      <button class="btn btn-primary pull-right" type="submit" id="submit">作成</button>
+    </div>
+  </div>
+
   <div><a href="/home/">ホームへ</a></div>
   <div><a href="/logout/">ログアウト</a></div>
 {% endblock %}

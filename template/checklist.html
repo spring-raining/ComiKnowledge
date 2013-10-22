@@ -4,13 +4,40 @@
 
 {% block content %}
   <h3>チェックリスト読み込み</h3>
-  <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
-    <div class="form-group">
-      <label for="form_csv">CSVチェックリストを読み込み</label>
-      <input type="file" name="csv" id="form_csv">
+
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ list_name }}を読み込みました！</div>
+  {% endifequal %}
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">読み込むリストを選択してください</div>
+  {% endifequal %}
+  {% ifequal alert_code 3 %}
+    <div class="alert alert-danger" id="alert">リストの読み込みに失敗しました</div>
+  {% endifequal %}
+
+  <div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accodion" href="#collapse_body">
+          CSVチェックリストを読み込む
+        </a>
+      </h4>
     </div>
-    <input class="btn btn-default" type="submit" id="submit" value="読み込み">
-  </form>
+    <div id="collapse_body" class="panel-collapse collapse">
+      <div class="panel-body">
+        <form class="form-horizontal" method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
+          <label  class="col-sm-offset-1 col-sm-10" for="form_csv">読み込むCSVファイルを選択</label>
+          <div class="col-sm-offset-1 col-sm-8 col-xs-10">
+            <input type="file" name="csv" id="form_csv">
+          </div>
+          <div class="col-xs-2">
+            <input type="submit" class="btn btn-primary pull-right" id="submit" value="読み込み">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <h3>チェックリスト一覧</h3>
   <table class="table">

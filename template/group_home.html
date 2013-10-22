@@ -2,46 +2,155 @@
 
 {% block title %}グループ{% endblock %}
 
+{% block style %}
+  <style>
+      .members {
+          margin: 0;
+      }
+      .members_thmbnail {
+          margin: 10px;
+      }
+      .members_data {
+          margin: 28px 0;
+      }
+  </style>
+{% endblock %}
+
+{% block script %}
+  <script>
+  var description = function() {/*{{ group.description|default:"説明文はありません" }}*/}.toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
+
+  $(function() {
+      $("#description").text(description);
+      $("#request_join_submit").click(function() {
+          Dajaxice.ck.ajax_request_join(callback_request_join, {"form":$("#form_request_join").serialize(true)});
+      });
+      $("#update_description_submit").click(function() {
+          Dajaxice.ck.ajax_update_group_description(callback_update_description, {"form":$("#form_update_description").serialize(true)});
+      });
+      $("#description").dblclick(function() {
+          if (description == "説明文はありません") description = "";
+          $("#form_description").attr("rows", description.split("\n").length + 1);
+          $("#form_description").text(description);
+          $("#description").hide();
+          $("#form_update_description").show();
+      });
+  });
+
+  function callback_request_join(data) {
+      $("#alert").removeClass("alert-success alert-danger").hide();
+      $(".form-group").removeClass("has-error");
+      if (data.alert_code == "1") {
+          $("#alert").addClass("alert-success").text(data.user_id + " を招待しました！").show();
+      }
+      else if (data.alert_code == "2") {
+          $("#alert").addClass("alert-danger").text("Twitter IDを入力してください").show();
+          $(".form-group").addClass("has-error");
+      }
+      else if (data.alert_code == "3") {
+          $("#alert").addClass("alert-danger").text(data.user_id + " はまだComiKnowledgeにログインしていません").show();
+          $(".form-group").addClass("has-error");
+      }
+      else if (data.alert_code == "4") {
+          $("#alert").addClass("alert-danger").text(data.user_id + " はすでにグループに参加しています").show();
+          $(".form-group").addClass("has-error");
+      }
+  }
+
+  function callback_update_description(data) {
+      description = data.description;
+      if (description == "") description = "説明文はありません";
+      $("#description").text(description);
+      $("#form_update_description").hide();
+      $("#description").show();
+  }
+  </script>
+{% endblock %}
+
 {% block content %}
-  <h1>グループ</h1>
-  <div>
-  <h2>メンバーを追加</h2>
-    <form method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
-      <div class="form-group">
-        <label for="form_name">追加するメンバーのTwitter IDを入力</label>
-        <input class="form-control"type="text" name="name" id="form_name">
+  <h2>{{ group.name }}</h2>
+
+  <pre class="panel panel-default" id="description"></pre>
+
+  <form class="form-horizontal" id="form_update_description" hidden>
+    <div class="form-group">
+      <textarea class="form-control" id="form_description" name="description" maxlength="4000"></textarea>
+    </div>
+    <input type="hidden" name="group_id" value="{{ group.group_id }}">
+    <div class="form-group">
+      <button type="button" class="btn btn-primary pull-right" id="update_description_submit">編集を終了</button>
+    </div>
+  </form>
+
+  <div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accodion" href="#collapse_body">
+          新しいメンバーを招待する
+        </a>
+      </h4>
+    </div>
+    <div id="collapse_body" class="panel-collapse collapse">
+      <div class="panel-body">
+
+        <div class="col-sm-offset-1 col-sm-10">
+          <div class="alert" id="alert" hidden></div>
+        </div>
+
+        <form class="form-horizontal" method="post" id="form_request_join">{% csrf_token %}
+          <div class="form-group">
+            <label  class="col-sm-offset-1 col-sm-10" for="form_name">招待するメンバーのTwitter IDを入力</label>
+            <div class="col-sm-offset-1 col-sm-9 col-xs-10">
+              <input class="form-control" type="text" name="user_id" id="form_name" maxlength="15">
+            </div>
+            <input type="hidden" name="group_id" value="{{ group.group_id }}">
+            <div class="col-sm-1 col-xs-2">
+              <button type="button" class="btn btn-primary pull-right" id="request_join_submit">招待</button>
+            </div>
+          </div>
+        </form>
+
       </div>
-      <div>
-        <input class="btn btn-default" type="submit" id="submit" value="読み込み">
-      </div>
-    </form>
+    </div>
   </div>
-  <div>
-    <h2>メンバー一覧</h2>
-    <table class="table table-bordered">
-    {% if inviting_members %}
-      <tr><td colspan="3">招待中のメンバー</td></tr>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a href="{% url "ck.views.group_checklist_create" group.group_id %}">
+          リストを統合する
+        </a>
+      </h4>
+    </div>
+  </div>
+  </div>
+  {% if inviting_members %}
+    <h4>招待中のメンバー</h4>
+    <div class="row">
       {% for member in inviting_members %}
-        <tr>
-          <td>{{ member.id }}</td>
-          <td>{{ member.username }}</td>
-          <td>{{ member.first_name }}</td>
-        </tr>
+        <div class="members col-lg-3 col-md-4 col-xs-6">
+          {% if member.thumbnail %}<img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive" align="left">{% endif %}
+          <div class="members_data">
+            <strong>{{ member.first_name }}</strong><br>
+            {{ member.username }}
+          </div>
+        </div>
       {% endfor %}
-      <tr><td colspan="3">参加メンバー</td></tr>
-    {% endif %}
+    </div>
+  {% endif %}
+  <h4>参加メンバー</h4>
+  <div class="row">
     {% for member in members %}
-      <tr>
-        <td>{{ member.id }}</td>
-        <td>{{ member.username }}</td>
-        <td>{{ member.first_name }}</td>
-      </tr>
-      {% for list in member.lists %}
-      <tr><td></td><td>{{ list.list_id }}</td><td>{{ list.list_name }}</td></tr>
-      {% endfor %}
+      <div class="members col-lg-3 col-md-4 col-xs-6">
+        {% if member.thumbnail %}<img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive" align="left">{% endif %}
+        <div class="members_data">
+          <strong>{{ member.first_name }}</strong><br>
+          {{ member.username }}
+        </div>
+      </div>
     {% endfor %}
-    </table>
   </div>
-  <div><a href="/home/">ホームへ</a></div>
+
+  <div><a href="{% url "ck.views.home" %}">ホームへ</a></div>
   <div><a href="/logout/">ログアウト</a></div>
 {% endblock %}

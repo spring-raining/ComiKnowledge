@@ -10,10 +10,14 @@ from src.data.parser import parse_checklist_array
 from src.translator import *
 from src.container.list import *
 from src.utils import generate_rand_str, convert_to_hankaku
+from src.error import *
 
 
 def import_list(csv_file, parent_user):
-    arr = parse_checklist_array(csv_file)
+    try:
+        arr = parse_checklist_array(csv_file)
+    except:
+        raise ChecklistInvalidError
 
     l = List()
     l.list_name = csv_file.name
@@ -29,7 +33,7 @@ def import_list(csv_file, parent_user):
     for line in arr:
         if line[0] == "Header" and len(line) >= 5:
             if line[1] != "ComicMarketCD-ROMCatalog":
-                continue
+                raise ChecklistInvalidError
             l.header_name = line[2]
             l.header_encoding = line[3]
             l.header_id = line[4]

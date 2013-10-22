@@ -4,13 +4,15 @@ import re
 from django.db import IntegrityError
 
 from ck.models import CKGroup, CKUser, Relation
-from src.error import FormBlankError, FormDuplicateError
+from src.error import FormBlankError, FormDuplicateError, FormInvalidError
 
 def create_group(group_name, group_id):
     if not group_name:
         raise FormBlankError("group_name")
     if not group_id:
         raise FormBlankError("group_id")
+    if re.search("\W+", group_id) is not None:
+        raise FormInvalidError("group_id")
     try:
         g = CKGroup(group_id=group_id, name=group_name)
         g.save()
@@ -28,17 +30,28 @@ def add_member(ckgroup, ckuser):
     r.save()
 
 # グループにユーザーを招待(verification=False)
-def request_join(ckgroup, ckuser):
+def request_join(group_id, username):
+    if not username:
+        raise FormBlankError("user_id")                                 # user_idが空
     try:
-        Relation.objects.get(ckgroup=ckgroup, ckuser=ckuser)
+        g = CKGroup.objects.get(group_id=group_id)
+        u = CKUser.objects.get(username=username)
+        r = Relation.objects.get(ckgroup=g, ckuser=u)
+        if r.verification:                                              # すでにグループに属している
+            return False
+        else:                                                           # リクエスト送信済み
+            return True
+    except CKUser.DoesNotExist:                                         # ユーザーがいない
+        raise
     except Relation.DoesNotExist:
-        r = Relation(ckgroup=ckgroup, ckuser=ckuser, verification=False)
+        r = Relation(ckgroup=g, ckuser=u, verification=False)
         r.save()
         return True
-    return False
 
 # 招待されたグループに参加(verificationをTrueに)
-def verify_join(group_id, user_id):
-    r = Relation.objects.get(ckgroup=group_id, ckuser=user_id)
+def verify_join(group_id, username):
+    g = CKGroup.objects.get(group_id=group_id)
+    u = CKUser.objects.get(username=username)
+    r = Relation.objects.get(ckgroup=g, ckuser=u)
     r.verification = True
     r.save()

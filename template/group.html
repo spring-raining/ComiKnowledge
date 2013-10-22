@@ -2,16 +2,60 @@
 
 {% block title %}グループ{% endblock %}
 
+{% block style %}
+  <style>
+      #alert_verify_join {
+          margin: 10px 0;
+      }
+  </style>
+{% endblock %}
+
 {% block script %}
   <script>
-  {% ifequal alert_code 1 %}
+  $(function() {
+      $("#submit_create_group").click(function() {
+          Dajaxice.ck.ajax_create_group(callback_create_group, {"form":$("#form_create_group").serialize(true)});
+      });
+      $(".submit_verify_join").click(function() {
+          Dajaxice.ck.ajax_verify_join(callback_verify_join, {"group_id": $(this).attr("value")});
+      });
+  });
 
-  {% endifequal %}
+  function callback_create_group(data) {
+      $("#alert").removeClass("alert-success alert-danger").hide();
+      $(".form-group").removeClass("has-error");
+      if (data.alert_code == "1") {
+          $("#alert").addClass("alert-success").text(data.group_name + "が作成されました！").show();
+          $("#groups").append('<tr><td width="200">'+data.group_id+'</td><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+      }
+      else if (data.alert_code == "2") {
+          $("#alert").addClass("alert-danger").text("空欄に内容を入力してください").show();
+          $(".form-group").each(function() {
+              if ($(this).find(".form-control").val() == "") {
+                  $(this).addClass("has-error");
+              }
+          });
+      }
+      else if (data.alert_code == "3") {
+          $("#alert").addClass("alert-danger").text("すでに同じグループIDが使われています").show();
+          $("#form_id").parents(".form-group").addClass("has-error");
+      }
+      else if (data.alert_code == "4") {
+          $("#alert").addClass("alert-danger").text("このグループIDは登録できません").show();
+          $("#form_id").parents(".form-group").addClass("has-error");
+      }
+  }
+
+  function callback_verify_join(data) {
+      $("#alert_verify_join").text(data.group_name + "に参加しました！").show();
+      $("tr[title='"+data.group_id+"']").remove();
+      $("#groups").append('<tr><td width="200">'+data.group_id+'</td><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+  }
   </script>
 {% endblock %}
 
 {% block content %}
-  <h1>グループ</h1>
+  <h2>グループ</h2>
   <div class="panel-group" id="accordion">
   <div class="panel panel-default">
     <div class="panel-heading">
@@ -25,67 +69,61 @@
       <div class="panel-body">
 
         <div class="col-sm-offset-1 col-sm-10">
-        {% ifequal alert_code 1 %}
-          <div class="alert alert-info">
-            {{ created_group.name }}が作成されました！
-          </div>
-        {% endifequal %}
-        {% ifequal alert_code 2 %}
-          <div class="alert alert-danger">
-            空欄を埋めてください。
-          </div>
-        {% endifequal %}
-        {% ifequal alert_code 3 %}
-          <div class="alert alert-danger">
-            すでに同じグループIDが使われています。
-          </div>
-        {% endifequal %}
+          <div class="alert" id="alert" hidden></div>
         </div>
-        <form class="form-horizontal" method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
+
+        <form class="form-horizontal" method="post" id="form_create_group">{% csrf_token %}
           <div class="form-group">
             <label class="col-sm-offset-1 col-sm-3" for="form_name">グループの名前</label>
             <div class="col-sm-7">
-              <input class="form-control" type="text" name="group_name" id="form_name" placeholder="30文字">
+              <input class="form-control" type="text" name="group_name" id="form_name" maxlength="30" placeholder="30文字">
             </div>
           </div>
           <div class="form-group">
             <label class="col-sm-offset-1 col-sm-3" for="form_id">グループのID</label>
             <div class="col-sm-7">
-              <input class="form-control" type="text" name="group_id" id="form_id" placeholder="半角英数字とアンダーバー 30文字">
+              <input class="form-control" type="text" name="group_id" id="form_id" maxlength="30" placeholder="半角英数字とアンダーバー 30文字">
             </div>
           </div>
           <div class="form-group">
             <div class="col-sm-offset-4 col-sm-7">
-              <input class="btn btn-primary" type="submit" id="submit" value="作成">
+              <button type="button" class="btn btn-primary" id="submit_create_group">作成</button>
+              <!--<input class="btn btn-primary" type="submit" id="submit" value="作成">-->
             </div>
           </div>
         </form>
       </div>
     </div>
   </div>
+
   </div>
-  <div class="col-sm-12">
-    <h4>参加中のグループ一覧</h4>
-    <table class="table">
+  <div class="container">
+
+    <div class="alert alert-success" id="alert_verify_join" hidden></div>
+
     {% if invited_groups %}
-      <tr><td colspan="3">招待されているグループ</td></tr>
+      <h4>招待されているグループ</h4>
+      <table class="table" id="invited_groups">
       {% for group in invited_groups %}
-        <tr>
-          <td>{{ group.group_id }}</td>
-          <td>{{ group.name }}</td>
-          <td><a href="/group/?command=join&id={{ group.id }}">参加</a></td>
+        <tr title="{{ group.group_id }}">
+          <td width="200">{{ group.group_id }}</td>
+          <td>{{ group.name }}
+            <button class="btn btn-sm btn-primary pull-right submit_verify_join" value="{{ group.group_id }}">参加</button>
+          </td>
         </tr>
       {% endfor %}
-      <tr><td colspan="3">参加中のグループ</td></tr>
+      </table>
     {% endif %}
+    <h4>参加中のグループ</h4>
+    <table class="table" id="groups">
     {% for group in groups %}
-      <tr>
-        <td>{{ group.group_id }}</td>
-        <td colspan="2"><a href="/group/{{ group.group_id }}/">{{ group.name }}</a></td>
+      <tr title="{{ group.group_id }}">
+        <td width="200">{{ group.group_id }}</td>
+        <td><a href="{% url "ck.views.group_home" group.group_id %}">{{ group.name }}</a></td>
       </tr>
     {% endfor %}
     </table>
   </div>
-  <div><a href="/home/">ホームへ</a></div>
-  <div><a href="/logout/">ログアウト</a></div>
+  <div><a href="{% url "ck.views.home" %}">ホームへ</a></div>
+  <div><a href="{% url "ck.views.logout" %}">ログアウト</a></div>
 {% endblock %}

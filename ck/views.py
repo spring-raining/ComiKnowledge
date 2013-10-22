@@ -4,10 +4,12 @@ import os
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
+from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from social_auth.db.django_models import UserSocialAuth
+from dajaxice.decorators import dajaxice_register
 
 from ComiKnowledge import settings
 from ck.models import *
@@ -48,9 +50,22 @@ def home(request):
 
 @login_required
 def checklist(request):
+    alert_code = 0
+    response = {}
+
+    # チェックリスト読み込み
     if request.method == "POST":
-        csv_file = request.FILES["csv"]
-        import_list(csv_file ,request.user)
+        if not "csv" in request.FILES:
+            alert_code = 2
+        else:
+            csv_file = request.FILES["csv"]
+            try:
+                l = import_list(csv_file ,request.user)
+                response["list_name"] = l.list_name
+                alert_code = 1
+            except ChecklistInvalidError:
+                alert_code = 3
+
     if request.GET.has_key("command"):
         if request.GET["command"] == "delete":
             delete_list(request.GET["id"])
@@ -59,8 +74,10 @@ def checklist(request):
             response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
             response["Content-Disposition"] = "attachment; filename=%s.csv" % List.objects.get(list_id=request.GET["id"]).list_name
             return output_list(response, request.GET["id"], memo_template="{memo}({userid}) ")
-    c = RequestContext(request,
-                       {"lists": request.user.list_set.all()})
+
+    response["alert_code"] = alert_code
+    response["lists"] = request.user.list_set.all()
+    c = RequestContext(request, response)
     return render_to_response("checklist.html", c)
 
 
@@ -86,22 +103,6 @@ def checklist_edit(request, list_id):
 @login_required
 def group(request):
     alert_code = 0
-    created_group = None
-    if request.method == "POST":
-        try:
-            g = create_group(request.POST["group_name"], request.POST["group_id"])
-            add_member(g, request.user)
-            alert_code = 1
-            created_group = g
-        except FormBlankError:
-            alert_code = 2
-        except FormDuplicateError:
-            alert_code = 3
-
-    if request.GET.has_key("command"):
-        if request.GET["command"] == "join":
-            verify_join(request.GET["id"], request.user.id)
-
     groups = []
     invited_groups = []
     for i in request.user.ckgroup_set.all():
@@ -113,8 +114,7 @@ def group(request):
     c = RequestContext(request,
                        {"groups": groups,
                         "invited_groups": invited_groups,
-                        "alert_code": alert_code,
-                        "created_group": created_group})
+                        "alert_code": alert_code})
     return render_to_response("group.html", c)
 
 
@@ -131,16 +131,6 @@ def group_home(request, group_id):
     r = Relation.objects.get(ckgroup=g, ckuser=request.user)            # ユーザーがまだグループに参加していない
     if r.verification == False:
         raise Http404
-
-    if request.method == "POST":
-        try:
-            u = CKUser.objects.get(username=request.POST["name"])
-            if request_join(g, u):
-                print "Sent join request!"
-            else:                                                       # リクエスト送信済み
-                pass
-        except CKUser.DoesNotExist:                                     # ユーザーがいない
-            pass
 
     if request.GET.has_key("command"):
         if request.GET["command"] == "leave":
