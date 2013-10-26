@@ -129,10 +129,10 @@ def delete_circle(circle_id):
 
 
 # 統合時、色などのリスト共通情報はlists[0]のものを保存する
-def merge_list(lists, user):
+def merge_list(lists, group, list_name):
     l = List()
-    l.list_name = lists[0].list_name
-    l.parent_user = lists[0].parent_user
+    l.list_name = list_name
+    l.parent_group = group
     while True:
         g = generate_rand_str(8)
         try:

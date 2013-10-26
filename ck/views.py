@@ -138,6 +138,7 @@ def group_home(request, group_id):
 
     members = []
     inviting_members = []
+    response = {}
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
         if r.verification == True:
@@ -146,10 +147,12 @@ def group_home(request, group_id):
             inviting_members.append(i)
     for member in members:
         member.lists = member.list_set.all()
-    c = RequestContext(request,
-                       {"group": g,
-                        "members": members,
-                        "inviting_members": inviting_members})
+    response["group"] = g
+    response["members"] = members
+    response["inviting_members"] = inviting_members
+    response["lists"] = g.list_set.all()
+    print g.list_set.all()
+    c = RequestContext(request, response)
     return render_to_response("group_home.html", c)
 
 
@@ -168,6 +171,7 @@ def group_checklist_create(request, group_id):
         raise Http404
 
     if request.method == "POST":
+        print "aaaa"
         lists = request.POST.getlist("list[]")
         first = request.POST["first"]
         if lists and first and first in lists:
@@ -176,7 +180,7 @@ def group_checklist_create(request, group_id):
             l = []
             for i in lists:
                 l.append(List.objects.get(id=i))
-            merge_list(l, request.user)
+            merge_list(l, g, request.POST["list_name"])
 
     members = []
     for i in g.members.all():

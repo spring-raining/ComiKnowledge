@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block content %}
+  <form method="post" id="form">{% csrf_token %}
   <div>
     <h2>チェックリストを統合</h2>
 
@@ -72,9 +73,10 @@
 
   <div class="row">
     <div class="col-sm-offset-1 col-sm-10">
-      <button class="btn btn-primary pull-right" type="submit" id="submit">作成</button>
+      <input class="btn btn-primary pull-right" type="submit" id="submit" value="作成">
     </div>
   </div>
+  </form>
 
   <div><a href="/home/">ホームへ</a></div>
   <div><a href="/logout/">ログアウト</a></div>

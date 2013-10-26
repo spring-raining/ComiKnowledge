@@ -5,6 +5,8 @@ from django.core import validators
 from django.db import models
 from django.contrib.auth import models as auth_models
 
+from ComiKnowledge.settings import THUMBNAILS_UPLOAD_TO
+
 ENCODE_CHOICES = (
     ("S", "Shift_JIS"),
     ("I", "ISO-2022-JP"),
@@ -17,7 +19,7 @@ ENCODE_CHOICES = (
 # ユーザーの拡張モデル
 #
 class CKUser(auth_models.User):
-    thumbnail = models.ImageField(upload_to="thumbnails", null=True)
+    thumbnail = models.ImageField(upload_to=THUMBNAILS_UPLOAD_TO, null=True)
     circlems_access_token = models.CharField(max_length=50, null=True)
     circlems_refresh_token = models.CharField(max_length=50, null=True)
 
@@ -43,7 +45,8 @@ class Relation(models.Model):
 # CSVリストのモデル
 #
 class List(models.Model):
-    parent_user = models.ForeignKey(CKUser)
+    parent_user = models.ForeignKey(CKUser, null=True)
+    parent_group = models.ForeignKey(CKGroup, null=True)
     list_id = models.CharField(max_length=8, unique=True,
                                 validators=[validators.RegexValidator(re.compile('^\w+$'))])
     list_name = models.CharField(max_length=256)
