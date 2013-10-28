@@ -5,22 +5,50 @@
 {% block style %}
   <style>
       .members {
-          margin: 10px;
+          margin: 5px;
       }
   </style>
 {% endblock %}
 
+{% block script %}
+  <script>
+  $(function() {
+      $(".form_first").change(function() {
+          $(".form_list[value="+$(this).val()+"]").prop("checked", true);
+      });
+      $(".form_list").click(function() {
+          if (!$(this).prop("checked"))
+              $(".form_first[value="+$(this).val()+"]").prop("checked", false);
+      });
+  });
+  </script>
+{% endblock %}
+
 {% block content %}
   <form method="post" id="form">{% csrf_token %}
-  <div>
-    <h2>チェックリストを統合</h2>
 
+  <h2>チェックリストを統合</h2>
+
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
+  {% endifequal %}
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">リストの名前を入力してください</div>
+  {% endifequal %}
+  {% ifequal alert_code 3 %}
+    <div class="alert alert-danger" id="alert">統合するリストを選択してください</div>
+  {% endifequal %}
+  {% ifequal alert_code 4 %}
+    <div class="alert alert-danger" id="alert">リストの統合に失敗しました</div>
+  {% endifequal %}
+
+  <div>
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">チェックリストの統合設定</h3>
       </div>
       <div class="panel-body">
-        <div class="form-group">
+        <div class="form-group{% ifequal alert_code 2 %} has-error{% endifequal %}">
           <label class="col-sm-offset-1 col-sm-3" for="form_name">チェックリストの名前</label>
           <div class="col-sm-7">
             <input class="form-control" type="text" name="list_name" id="form_name" maxlength="30" placeholder="30文字">
@@ -53,12 +81,12 @@
                 <td>{{ list.list_name }}</td>
                 <td>
                     <label>
-                      <input type="checkbox" name="list[]" value={{ list.id }}>
+                      <input type="checkbox" name="list[]" class="form_list" value={{ list.id }}>
                     </label>
                 </td>
                 <td>
                     <label>
-                      <input type="radio" name="first" value="{{ list.id }}">
+                      <input type="radio" name="first" class="form_first" value="{{ list.id }}">
                     </label>
                 </td>
               </tr>

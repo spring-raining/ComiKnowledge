@@ -2,6 +2,7 @@
 
 import csv
 import json
+import os
 from django.forms import ModelForm
 
 from ck.models import *
@@ -20,7 +21,7 @@ def import_list(csv_file, parent_user):
         raise ChecklistInvalidError
 
     l = List()
-    l.list_name = csv_file.name
+    l.list_name = os.path.splitext(csv_file.name)[0]
     l.parent_user = parent_user
     while True:
         g = generate_rand_str(8)
@@ -131,6 +132,10 @@ def delete_circle(circle_id):
 # 統合時、色などのリスト共通情報はlists[0]のものを保存する
 def merge_list(lists, group, list_name):
     l = List()
+    if not list_name:
+        raise FormBlankError("list_name")
+    if not lists:
+        raise FormBlankError("lists")
     l.list_name = list_name
     l.parent_group = group
     while True:
@@ -205,9 +210,13 @@ def merge_list(lists, group, list_name):
     return l
 
 
-def output_list(response, list_id, memo_template="{memo} ", color_order=(1,2,3,4,5,6,7,8,9,)):
+def output_list(response, list_id, memo_template, color_order=(1,2,3,4,5,6,7,8,9,)):
     writer = csv.writer(response, delimiter=",", quotechar='"')
+    sub = lambda x: "0" if x == "a" else ("1" if x == "b" else "")
+    enc_utf8 = lambda x: x.encode("utf-8") if x else ""
+    to_str = lambda x: str(x).encode("utf-8") if x is not None else ""
     out_list = List.objects.get(list_id=list_id)
+
     writer.writerow(["Header",
                      "ComicMarketCD-ROMCatalog",
                      src.HEADER_NAME,
@@ -215,10 +224,10 @@ def output_list(response, list_id, memo_template="{memo} ", color_order=(1,2,3,4
                      "%s %s" % (src.APP_NAME, str(src.VERSION))])
     for i in out_list.listcolor_set.all():
         writer.writerow(["Color",
-                         i.color_number,
-                         to_bgr_color(i.check_color),
-                         to_bgr_color(i.print_color),
-                         i.description])
+                         to_str(i.color_number),
+                         enc_utf8(to_bgr_color(i.check_color)),
+                         enc_utf8(to_bgr_color(i.print_color)),
+                         enc_utf8(i.description)])
     out_circles = {}
     for i in out_list.listcircle_set.all():
         if i.serial_number in out_circles:
@@ -235,9 +244,6 @@ def output_list(response, list_id, memo_template="{memo} ", color_order=(1,2,3,4
                 .replace("{username}", i.added_by.first_name)\
                 .replace("{userid}", i.added_by.username)
             out_circles[i.serial_number] = (i, m, i.color_number)
-    sub = lambda x: "0" if x == "a" else ("1" if x == "b" else "")
-    enc_utf8 = lambda x: x.encode("utf-8") if x else ""
-    to_str = lambda x: str(x).encode("utf-8") if x is not None else ""
     for key, value in out_circles.items():
         v, m, c = value
         writer.writerow(["Circle",

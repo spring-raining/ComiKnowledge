@@ -45,8 +45,8 @@
       <tr>
         <td>{{ list.list_id }}</td>
         <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
-        <td><a href="/checklist?command=save&id={{ list.list_id }}" class="btn btn-default btn-sm">保存</a></td>
-        <td><a href="/checklist?command=delete&id={{ list.list_id }}" class="btn btn-default btn-sm">削除</a></td>
+        <td width="50"><a href="/checklist?command=save&id={{ list.list_id }}" class="btn btn-default btn-sm">保存</a></td>
+        <td width="50"><a href="/checklist?command=delete&id={{ list.list_id }}" class="btn btn-default btn-sm">削除</a></td>
       </tr>
     {% endfor %}
   </table>

@@ -72,8 +72,9 @@ def checklist(request):
             return HttpResponseRedirect("/checklist/")
         if request.GET["command"] == "save":
             response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
-            response["Content-Disposition"] = "attachment; filename=%s.csv" % List.objects.get(list_id=request.GET["id"]).list_name
-            return output_list(response, request.GET["id"], memo_template="{memo}({userid}) ")
+            name = List.objects.get(list_id=request.GET["id"]).list_name
+            response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % name).encode("utf-8")
+            return output_list(response, request.GET["id"], memo_template=u"{memo}({username}),\n")
 
     response["alert_code"] = alert_code
     response["lists"] = request.user.list_set.all()
@@ -151,7 +152,6 @@ def group_home(request, group_id):
     response["members"] = members
     response["inviting_members"] = inviting_members
     response["lists"] = g.list_set.all()
-    print g.list_set.all()
     c = RequestContext(request, response)
     return render_to_response("group_home.html", c)
 
@@ -170,17 +170,29 @@ def group_checklist_create(request, group_id):
     if r.verification == False:
         raise Http404
 
+    response = {}
+    alert_code = 0
     if request.method == "POST":
-        print "aaaa"
-        lists = request.POST.getlist("list[]")
-        first = request.POST["first"]
-        if lists and first and first in lists:
-            del lists[lists.index(first)]
-            lists.insert(0, first)
+        if not request.POST["list_name"]:
+            alert_code = 2
+        elif not request.POST.getlist("list[]"):
+            alert_code = 3
+        else:
+            lists = request.POST.getlist("list[]")
+            if "first" in request.POST:
+                first = request.POST["first"]
+                if first in lists:
+                    del lists[lists.index(first)]
+                    lists.insert(0, first)
             l = []
             for i in lists:
                 l.append(List.objects.get(id=i))
-            merge_list(l, g, request.POST["list_name"])
+            try:
+                merge_list(l, g, request.POST["list_name"])
+                response["list_name"] = request.POST["list_name"]
+                alert_code = 1
+            except:
+                alert_code = 4
 
     members = []
     for i in g.members.all():
@@ -189,9 +201,10 @@ def group_checklist_create(request, group_id):
             members.append(i)
     for member in members:
         member.lists = member.list_set.all()
-    c = RequestContext(request,
-                       {"group": g,
-                        "members": members})
+    response["group"] = g
+    response["members"] = members
+    response["alert_code"] = alert_code
+    c = RequestContext(request, response)
     return render_to_response("group_checklist_create.html", c)
 
 
