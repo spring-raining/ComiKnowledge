@@ -66,16 +66,6 @@ def checklist(request):
             except ChecklistInvalidError:
                 alert_code = 3
 
-    if request.GET.has_key("command"):
-        if request.GET["command"] == "delete":
-            delete_list(request.GET["id"])
-            return HttpResponseRedirect("/checklist/")
-        if request.GET["command"] == "save":
-            response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
-            name = List.objects.get(list_id=request.GET["id"]).list_name
-            response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % name).encode("utf-8")
-            return output_list(response, request.GET["id"], memo_template=u"{memo}({username}),\n")
-
     response["alert_code"] = alert_code
     response["lists"] = request.user.list_set.all()
     c = RequestContext(request, response)
@@ -83,17 +73,51 @@ def checklist(request):
 
 
 @login_required
-def checklist_edit(request, list_id):
+def checklist_download(request, list_id):
     if list_id is None:
-        return HttpResponseRedirect("/checklist/")
-    if request.GET.has_key("command"):
-        if request.GET["command"] == "delete":
-            delete_circle(request.GET["id"])
-            return HttpResponseRedirect("/checklist/" + list_id)
+        return HttpResponseRedirect("/")
     try:
         l = List.objects.get(list_id=list_id)
-    except:
+    except:                                                             # list_idがおかしい
         raise Http404
+    if l.parent_user:
+        if l.parent_user != request.user:                               # リストがログインしているユーザーのものでない
+            raise Http404
+        response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
+        response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
+        return output_list(response, l.list_id, memo_template=u"{memo}")
+    elif l.parent_group:
+        g = l.parent_group
+        if not g.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
+            raise Http404
+        r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
+        if r.verification == False:
+            raise Http404
+        response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
+        response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
+        return output_list(response, l.list_id, memo_template=u"{memo}({username}), ")
+        #c = RequestContext(request)
+        #return render_to_response("checklist_download.html", c)
+
+
+@login_required
+def checklist_edit(request, list_id):
+    if list_id is None:
+        raise Http404
+    try:
+        l = List.objects.get(list_id=list_id)
+    except:                                                             # list_idがおかしい
+        raise Http404
+    if l.parent_user:
+        if l.parent_user != request.user:                               # リストがログインしているユーザーのものでない
+            raise Http404
+    elif l.parent_group:
+        g = l.parent_group
+        if not g.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
+            raise Http404
+        r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
+        if r.verification == False:
+            raise Http404
 
     c = RequestContext(request,
                        {"list": l,
@@ -122,7 +146,7 @@ def group(request):
 @login_required
 def group_home(request, group_id):
     if group_id is None:
-        return HttpResponseRedirect("/group/")
+        raise Http404
     try:
         g = CKGroup.objects.get(group_id=group_id)
     except:                                                             # group_idがおかしい
@@ -159,7 +183,7 @@ def group_home(request, group_id):
 @login_required
 def group_checklist_create(request, group_id):
     if group_id is None:
-        return HttpResponseRedirect("/group/")
+        raise Http404
     try:
         g = CKGroup.objects.get(group_id=group_id)
     except:                                                             # group_idがおかしい

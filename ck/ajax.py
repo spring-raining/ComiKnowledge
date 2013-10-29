@@ -64,7 +64,6 @@ def ajax_request_join(request, form):
 def ajax_verify_join(request, group_id):
     print group_id
     g = CKGroup.objects.get(group_id=group_id)
-    print request.user.username
     verify_join(group_id, request.user.username)
     return json.dumps({"group_name": g.name, "group_id": g.group_id})
 
@@ -77,7 +76,6 @@ def ajax_import_list(request, form):
     if request.method != "POST":
         return
     try:
-        print post
         l = import_list(post["csv"], request.user.username)
         response["list_name"] = l.list_name
         alert_code = 1
@@ -85,3 +83,9 @@ def ajax_import_list(request, form):
         alert_code = 2
     response["alert_code"] = alert_code
     return json.dumps(response)
+
+
+@dajaxice_register
+def ajax_delete_list(request, list_id):
+    if delete_list(list_id):
+        return json.dumps({"list_id": list_id})

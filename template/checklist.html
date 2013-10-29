@@ -2,6 +2,20 @@
 
 {% block title %}チェックリスト{% endblock %}
 
+{% block script %}
+  <script>
+  $(function() {
+      $(".submit_delete_list").click(function() {
+          Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).attr("id")});
+      });
+  });
+
+  function callback_delete_list(data) {
+      $("tr[id="+data.list_id+"]").fadeOut("slow");
+  }
+  </script>
+{% endblock %}
+
 {% block content %}
   <h3>チェックリスト読み込み</h3>
 
@@ -38,15 +52,16 @@
       </div>
     </div>
   </div>
+  </div>
 
   <h3>チェックリスト一覧</h3>
   <table class="table">
     {% for list in lists %}
-      <tr>
+      <tr id="{{ list.list_id }}">
         <td>{{ list.list_id }}</td>
         <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
-        <td width="50"><a href="/checklist?command=save&id={{ list.list_id }}" class="btn btn-default btn-sm">保存</a></td>
-        <td width="50"><a href="/checklist?command=delete&id={{ list.list_id }}" class="btn btn-default btn-sm">削除</a></td>
+        <td width="50"><a href="/checklist/{{ list.list_id }}/download" class="btn btn-default btn-sm">保存</a></td>
+        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" id="{{ list.list_id }}">削除</button></td>
       </tr>
     {% endfor %}
   </table>
