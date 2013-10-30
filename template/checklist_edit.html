@@ -1,33 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}{{ list.list_name }}{% endblock %}
+{% block title %}{{ list.list_name }} | {% endblock %}
+
+{% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
+{% endblock %}
 
 {% block content %}
-  <h1>{{ list.list_name }}を編集</h1>
+  <h3>{{ list.list_name }}</h3>
 
   <table class="table table-bordered table-condensed table-hover">
     <thead>
       <tr>
-        <th width="60">#</th>
+        <th width="30">曜日</th>
         <th width="100">スペース</th>
-        <th>サークル名</th>
-        <th>説明</th>
-        <th width="40"></th>
+        <th width="250">サークル名</th>
+        <th>メモ</th>
+        <!--<th width="40"></th>-->
       </tr>
     </thead>
     <tbody>
     {% for circle in circles %}
       <tr>
-        <td>{{ circle.serial_number }}</td>
+        <td>{{ circle.week }}</td>
         <td>{{ circle.get_long_space }}</td>
         <td>{{ circle.circle_name }}</td>
-        <td>{{ circle.description }}</td>
-        <td><a href="/checklist/{{ list.list_id }}?command=delete&id={{ circle.id }}">削除</a></td>
+        <td>{{ circle.memo }}</td>
+        <!--<td><a href="/checklist/{{ list.list_id }}?command=delete&id={{ circle.id }}">削除</a></td>-->
       </tr>
     {% endfor %}
     </tbody>
   </table>
   <p><a href="/checklist/">チェックリスト一覧へ</a></p>
-  <p><a href="/home/">ホームへ</a></p>
-  <p><a href="/logout/">ログアウト</a></p>
+
 {% endblock %}

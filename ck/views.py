@@ -13,6 +13,7 @@ from dajaxice.decorators import dajaxice_register
 
 from ComiKnowledge import settings
 from ck.models import *
+import src
 from src.api.twitter import *
 from src.data.list import *
 from src.data.group import *
@@ -22,8 +23,7 @@ def index(request):
     t = loader.get_template("index.html")
     if request.user.is_authenticated():
         return HttpResponseRedirect("/home/")
-    c = RequestContext(request,
-                       {"test": "hello!"})
+    c = RequestContext(request, {"version": "%s %s" % (src.APP_NAME, src.VERSION)})
     return HttpResponse(t.render(c))
 
 
@@ -42,8 +42,7 @@ def home(request):
         save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
 
     ctx = RequestContext(request,
-                         {"test": "hello! now login",
-                          "user": request.user,
+                         {"user": request.user,
                           "invited_groups": invited_groups})
     return render_to_response("home.html", ctx)
 

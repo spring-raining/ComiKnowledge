@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}グループ{% endblock %}
+{% block title %}グループ | {% endblock %}
 
 {% block style %}
   <style>
@@ -54,8 +54,19 @@
   </script>
 {% endblock %}
 
+{% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li class="active"><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
+{% endblock %}
+
 {% block content %}
-  <h2>グループ</h2>
+  <h3>グループ</h3>
   <div class="panel-group" id="accordion">
   <div class="panel panel-default">
     <div class="panel-heading">
@@ -97,33 +108,29 @@
   </div>
 
   </div>
-  <div class="container">
+  <div class="alert alert-success" id="alert_verify_join" hidden></div>
 
-    <div class="alert alert-success" id="alert_verify_join" hidden></div>
-
-    {% if invited_groups %}
-      <h4>招待されているグループ</h4>
-      <table class="table" id="invited_groups">
-      {% for group in invited_groups %}
-        <tr title="{{ group.group_id }}">
-          <td width="200">{{ group.group_id }}</td>
-          <td>{{ group.name }}
-            <button class="btn btn-sm btn-primary pull-right submit_verify_join" value="{{ group.group_id }}">参加</button>
-          </td>
-        </tr>
-      {% endfor %}
-      </table>
-    {% endif %}
-    <h4>参加中のグループ</h4>
-    <table class="table" id="groups">
-    {% for group in groups %}
+  {% if invited_groups %}
+    <h3>招待されているグループ</h3>
+    <table class="table" id="invited_groups">
+    {% for group in invited_groups %}
       <tr title="{{ group.group_id }}">
         <td width="200">{{ group.group_id }}</td>
-        <td><a href="{% url "ck.views.group_home" group.group_id %}">{{ group.name }}</a></td>
+        <td>{{ group.name }}
+          <button class="btn btn-sm btn-primary pull-right submit_verify_join" value="{{ group.group_id }}">参加</button>
+        </td>
       </tr>
     {% endfor %}
     </table>
-  </div>
-  <div><a href="{% url "ck.views.home" %}">ホームへ</a></div>
-  <div><a href="{% url "ck.views.logout" %}">ログアウト</a></div>
+  {% endif %}
+  <h3>参加中のグループ</h3>
+  <table class="table" id="groups">
+  {% for group in groups %}
+    <tr title="{{ group.group_id }}">
+      <td width="200">{{ group.group_id }}</td>
+      <td><a href="{% url "ck.views.group_home" group.group_id %}">{{ group.name }}</a></td>
+    </tr>
+  {% endfor %}
+  </table>
+
 {% endblock %}

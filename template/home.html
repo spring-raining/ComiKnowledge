@@ -1,10 +1,17 @@
 {% extends "base.html" %}
 
 {% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li class="active"><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
 {% endblock %}
 
 {% block content %}
-  <p>{{ test }}</p>
   {% if invited_groups %}
     <div class="alert alert-info">
       <a href="{% url "ck.views.group" %}">
@@ -17,14 +24,9 @@
   <h3>User data:</h3>
     {% if user.thumbnail %}<img src="{{ user.thumbnail.url }}" class="">{% endif %}
     <table class="table">
-      <tr class="odd"><th>Id:</th> <td>{{ user.id }}</td></tr>
-      <tr class="even"><th>Username:</th> <td>{{ user.username }}</td></tr>
-      <tr class="odd"><th>Email:</th> <td>{{ user.email|default:"Not provided" }}</td></tr>
-      <tr class="even"><th>First name:</th> <td>{{ user.first_name|default:"Not provided" }}</td></tr>
-      <tr class="odd"><th>Last name:</th> <td>{{ user.last_name|default:"Not provided" }}</td></tr>
+      <tr><th>ID</th> <td>{{ user.id }}</td></tr>
+      <tr><th>UserID</th> <td>{{ user.username }}</td></tr>
+      <tr><th>Username</th> <td>{{ user.first_name }}</td></tr>
     </table>
   </div>
-  <div><a href="/group/">参加中のグループ</a></div>
-  <div><a href="/checklist/">チェックリスト読み込み</a></div>
-  <div><a href="/logout/">ログアウト</a></div>
 {% endblock %}

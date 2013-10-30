@@ -6,9 +6,26 @@
 <head>
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}hogehoge{% endblock %}</title>
+<title>{% block title %}{% endblock %}ComiKnowledge</title>
 
 <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet" media="screen">
+<style>
+  html, body {
+      height: 100%;
+  }
+  .content {
+      margin-top: 70px;
+  }
+  #wrapper {
+      min-height: 100%;
+      height: auto !important;
+      height: 100%;
+      margin: 0 auto -60px;
+  }
+  #push, footer {
+      height: 60px;
+  }
+</style>
 {% block style %}{% endblock %}
 
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
@@ -18,23 +35,38 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-default">
+  <div id="wrapper">
+  <nav class="navbar navbar-default navbar-fixed-top navbar-static-top">
     <div class="navbar-header">
+      <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-target">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
       <a href="/" class="navbar-brand">ComiKnowledge</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-target">
 {% block navbar-contents %}{% endblock %}
     </div>
   </nav>
 
-    <div id="header">
+  <div id="header">
 {% block header %}{% endblock %}
-    </div>
+  </div>
 
-    <div id="content" class="container">
+  <div id="content" class="container content">
 {% block content %}{% endblock %}
-    </div>
+  </div>
 
-    <div id="footer">
-{% block footer %}{% endblock %}
+  <div id="push"></div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p class="text-muted text-center">
+        © 2013 <a href="https://twitter.com/intent/tweet?screen_name=spring_raining" data-lang="ja" data-related="spring_raining">spring_raining</a>
+      </p>
     </div>
+  </footer>
 </body>
 </html>

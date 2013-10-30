@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}グループ{% endblock %}
+{% block title %}{{ group.name }} | {% endblock %}
 
 {% block style %}
   <style>
@@ -74,6 +74,17 @@
   </script>
 {% endblock %}
 
+{% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
+{% endblock %}
+
 {% block content %}
   <h2>{{ group.name }}</h2>
 
@@ -133,7 +144,7 @@
   </div>
 
   {% if inviting_members %}
-    <h4>招待中のメンバー</h4>
+    <h3>招待中のメンバー</h3>
     <div class="row">
       {% for member in inviting_members %}
         <div class="members col-lg-3 col-md-4 col-xs-6">
@@ -147,7 +158,7 @@
     </div>
   {% endif %}
 
-  <h4>参加メンバー</h4>
+  <h3>参加メンバー</h3>
   <div class="row">
     {% for member in members %}
       <div class="members col-lg-3 col-md-4 col-xs-6">
@@ -160,7 +171,7 @@
     {% endfor %}
   </div>
 
-  <h4>統合リスト</h4>
+  <h3>統合リスト</h3>
   <table class="table">
     {% for list in lists %}
       <tr id="{{ list.list_id }}">
@@ -172,6 +183,5 @@
     {% endfor %}
   </table>
 
-  <div><a href="{% url "ck.views.home" %}">ホームへ</a></div>
-  <div><a href="/logout/">ログアウト</a></div>
+  <p><a href="/group/">グループ一覧へ</a></p>
 {% endblock %}

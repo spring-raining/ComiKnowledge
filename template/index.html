@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block header %}
 <div class="jumbotron">
   <div class="container">
-    <h2>{{ test }}</h2>
-    <p><a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-primary">Twitterアカウントでログイン</a></p>
+    <h2>ComiKnowledge</h2>
+    <p>ComiKnowledgeで、コミケカタログのお気に入りやチェックリストを統合することができます。</p>
+    <p>これはテスト版です。何か問題がありましたら報告よろしくお願いします。</p>
+    <p><a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-lg btn-success">Twitterアカウントでログイン</a></p>
+    <small>{{ version }}</small>
   </div>
 </div>
 {% endblock %}
