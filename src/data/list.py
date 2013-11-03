@@ -210,12 +210,18 @@ def merge_list(lists, group, list_name):
     return l
 
 
-def output_list(response, list_id, memo_template, color_order=(1,2,3,4,5,6,7,8,9,)):
+#
+#   color_option=1  重複時color_orderで先頭に近い色を選ぶ
+#   color_option=2  重複時select_colorの色にする
+#
+def output_list(response, list_id, memo_template, color_option=1, color_order=(1,2,3,4,5,6,7,8,9,), select_color=1):
     writer = csv.writer(response, delimiter=",", quotechar='"')
     sub = lambda x: "0" if x == "a" else ("1" if x == "b" else "")
     enc_utf8 = lambda x: x.encode("utf-8") if x else ""
     to_str = lambda x: str(x).encode("utf-8") if x is not None else ""
     out_list = List.objects.get(list_id=list_id)
+    color_order = list(color_order)
+    color_order.append(0)
 
     writer.writerow(["Header",
                      "ComicMarketCD-ROMCatalog",
@@ -233,16 +239,23 @@ def output_list(response, list_id, memo_template, color_order=(1,2,3,4,5,6,7,8,9
         if i.serial_number in out_circles:
             v, m, c = out_circles[i.serial_number]
             m += memo_template\
-                .replace("{memo}", i.memo)\
+                .replace("{userid}", i.added_by.username)\
                 .replace("{username}", i.added_by.first_name)\
-                .replace("{userid}", i.added_by.username)
-            _c = i.color_number if color_order.index(i.color_number) < color_order.index(c) else c
+                .replace("{memo}", i.memo)\
+                .replace("\\n", "\n")
+            if color_option == 1:
+                _c = i.color_number if color_order.index(i.color_number) < color_order.index(c) else c
+            elif color_option == 2:
+                _c = select_color
+            else:
+                _c = 0
             out_circles[i.serial_number] = (v, m, _c)
         else:
             m = memo_template\
-                .replace("{memo}", i.memo)\
+                .replace("{userid}", i.added_by.username)\
                 .replace("{username}", i.added_by.first_name)\
-                .replace("{userid}", i.added_by.username)
+                .replace("{memo}", i.memo)\
+                .replace("\\n", "\n")
             out_circles[i.serial_number] = (i, m, i.color_number)
     for key, value in out_circles.items():
         v, m, c = value

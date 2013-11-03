@@ -92,11 +92,23 @@ def checklist_download(request, list_id):
         r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
         if r.verification == False:
             raise Http404
-        response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
-        response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
-        return output_list(response, l.list_id, memo_template=u"{memo}({username}), ")
-        #c = RequestContext(request)
-        #return render_to_response("checklist_download.html", c)
+
+        if request.method == "POST":
+            response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
+            response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
+            return output_list(response, l.list_id,
+                               memo_template=request.POST["memo"],
+                               color_option=int(request.POST["color_option"]),
+                               color_order=tuple(map(int, request.POST["color_order"].split(","))),
+                               select_color=int(request.POST["select_color"]))
+        color = {}
+        for i in l.listcolor_set.all():
+            if i.check_color:
+                color[i.color_number] = "#" + i.check_color
+        c = RequestContext(request, {"list": l,
+                                     "color": color,
+                                     "default_color": src.DEFAULT_COLOR})
+        return render_to_response("checklist_download.html", c)
 
 
 @login_required
