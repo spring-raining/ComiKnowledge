@@ -155,7 +155,7 @@ def group(request):
 
 
 @login_required
-def group_home(request, group_id):
+def group_home(request, group_id, **redirect_response):
     if group_id is None:
         raise Http404
     try:
@@ -175,6 +175,8 @@ def group_home(request, group_id):
     members = []
     inviting_members = []
     response = {}
+    if redirect_response:
+        response.update(redirect_response)
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
         if r.verification == True:
@@ -208,6 +210,10 @@ def group_checklist_create(request, group_id):
     response = {}
     alert_code = 0
     if request.method == "POST":
+        response["list_name"] = request.POST["list_name"]
+        response["lists"] = request.POST.getlist("list[]")
+        if "first" in request.POST:
+            response["first"] = request.POST["first"]
         if not request.POST["list_name"]:
             alert_code = 2
         elif not request.POST.getlist("list[]"):
@@ -224,8 +230,7 @@ def group_checklist_create(request, group_id):
                 l.append(List.objects.get(id=i))
             try:
                 merge_list(l, g, request.POST["list_name"])
-                response["list_name"] = request.POST["list_name"]
-                alert_code = 1
+                return group_home(request, group_id, alert_code=1, list_name=request.POST["list_name"])
             except:
                 alert_code = 4
 

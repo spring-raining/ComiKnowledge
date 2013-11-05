@@ -88,6 +88,10 @@
 {% block content %}
   <h2>{{ group.name }}</h2>
 
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
+  {% endifequal %}
+
   <pre class="panel panel-default" id="description"></pre>
 
   <form class="form-horizontal" id="form_update_description" hidden>

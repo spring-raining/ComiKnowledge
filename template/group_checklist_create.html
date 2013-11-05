@@ -13,6 +13,14 @@
 {% block script %}
   <script>
   $(function() {
+      $("#form_name").val("{{ list_name }}");
+      {% if first %}
+          $(".form_first[value={{ first }}]").prop("checked", true);
+      {% endif %}
+      {% for list in lists %}
+         $(".form_list[value={{ list }}]").prop("checked", true);
+      {% endfor %}
+
       $(".form_first").change(function() {
           $(".form_list[value="+$(this).val()+"]").prop("checked", true);
       });
@@ -92,7 +100,7 @@
                 <td>{{ list.list_name }}</td>
                 <td>
                     <label>
-                      <input type="checkbox" name="list[]" class="form_list" value={{ list.id }}>
+                      <input type="checkbox" name="list[]" class="form_list" value={{ list.id }} >
                     </label>
                 </td>
                 <td>
