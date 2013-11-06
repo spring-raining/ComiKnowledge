@@ -1,5 +1,5 @@
 APP_NAME = "ComiKnowledge"
-VERSION = "C85.0.1"
+VERSION = "C85.0.2"
 HEADER_NAME = "ComicMarket84"
 DEFAULT_COLOR = {1: "FF944A",
                  2: "FF00FF",
