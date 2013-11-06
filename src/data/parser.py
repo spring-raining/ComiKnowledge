@@ -28,9 +28,11 @@ def parse_tab_array(path, encoding):
     finally:
         decoded.close()
 
-def parse_checklist_array(path):
-    f = open(path, "r")
-    reader = csv.reader(f)
+def parse_checklist_array(csv_file):
+    """
+    チェックリストの文字コードを確認して配列に変換する
+    """
+    reader = csv.reader(csv_file)
     ret = []
     encoding = "unknown"
 
@@ -41,7 +43,7 @@ def parse_checklist_array(path):
             if l[3] == "UTF-8":
                 encoding = "utf-8"
             elif l[3] == "Shift_JIS":
-                encoding = "shift-jis"
+                encoding = "cp932"
             elif l[3] == "EUC-JP":
                 encoding = "euc-jp"
             elif l[3] == "ISO-2022-JP":

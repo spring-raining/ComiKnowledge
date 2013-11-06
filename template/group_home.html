@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} | {% endblock %}
+
+{% block style %}
+  <style>
+      .members {
+          margin: 0;
+      }
+      .members_thmbnail {
+          margin: 10px;
+      }
+      .members_data {
+          margin: 15px 0;
+      }
+  </style>
+{% endblock %}
+
+{% block script %}
+  <script>
+  var description = function() {/*{{ group.description|default:"説明文はありません" }}*/}.toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
+
+  $(function() {
+      $("#description").text(description);
+      $("#submit_request_join").click(function() {
+          Dajaxice.ck.ajax_request_join(callback_request_join, {"form":$("#form_request_join").serialize(true)});
+      });
+      $("#submit_update_description").click(function() {
+          Dajaxice.ck.ajax_update_group_description(callback_update_description, {"form":$("#form_update_description").serialize(true)});
+      });
+      $(".submit_delete_list").click(function() {
+          if (confirm($(this).attr("name")+"を削除しますか？")) {
+              Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
+          }
+      });
+      $("#submit_leave_group").click(function() {
+          if (confirm("{{ group.name }}から抜けますか？")) {
+              Dajaxice.ck.ajax_leave_group(callback_leave_group, {"group_id": "{{ group.group_id }}"});
+          }
+      });
+      $("#description").dblclick(function() {
+          if (description == "説明文はありません") description = "";
+          $("#form_description").attr("rows", description.split("\n").length + 1);
+          $("#form_description").text(description);
+          $("#description").hide();
+          $("#form_update_description").show();
+      });
+  });
+
+  function callback_request_join(data) {
+      $("#alert").removeClass("alert-success alert-danger").hide();
+      $(".form-group").removeClass("has-error");
+      if (data.alert_code == "1") {
+          $("#alert").addClass("alert-success").text(data.user_id + " を招待しました！").show();
+      }
+      else if (data.alert_code == "2") {
+          $("#alert").addClass("alert-danger").text("Twitter IDを入力してください").show();
+          $(".form-group").addClass("has-error");
+      }
+      else if (data.alert_code == "3") {
+          $("#alert").addClass("alert-danger").text(data.user_id + " はまだComiKnowledgeにログインしていません").show();
+          $(".form-group").addClass("has-error");
+      }
+      else if (data.alert_code == "4") {
+          $("#alert").addClass("alert-danger").text(data.user_id + " はすでにグループに参加しています").show();
+          $(".form-group").addClass("has-error");
+      }
+  }
+
+  function callback_update_description(data) {
+      description = data.description;
+      if (description == "") description = "説明文はありません";
+      $("#description").text(description);
+      $("#form_update_description").hide();
+      $("#description").show();
+  }
+
+  function callback_delete_list(data) {
+      $("tr[id="+data.list_id+"]").fadeOut("slow");
+  }
+
+  function callback_leave_group(data) {
+      document.location = "{% url "ck.views.group" %}";
+  }
+  </script>
+{% endblock %}
+
+{% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
+{% endblock %}
+
+{% block content %}
+  <h2>{{ group.name }}</h2>
+
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
+  {% endifequal %}
+
+  <pre class="panel panel-default" id="description"></pre>
+
+  <form class="form-horizontal" id="form_update_description" hidden>
+    <div class="form-group">
+      <textarea class="form-control" id="form_description" name="description" maxlength="4000"></textarea>
+    </div>
+    <input type="hidden" name="group_id" value="{{ group.group_id }}">
+    <div class="form-group">
+      <button type="button" class="btn btn-primary pull-right" id="submit_update_description">編集を終了</button>
+    </div>
+  </form>
+
+  <div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accodion" href="#collapse_body">
+          新しいメンバーを招待する
+        </a>
+      </h4>
+    </div>
+    <div id="collapse_body" class="panel-collapse collapse">
+      <div class="panel-body">
+
+        <div class="col-sm-offset-1 col-sm-10">
+          <div class="alert" id="alert" hidden></div>
+        </div>
+
+        <form class="form-horizontal" method="post" id="form_request_join">{% csrf_token %}
+          <div class="form-group">
+            <label  class="col-sm-offset-1 col-sm-10" for="form_name">招待するメンバーのTwitter IDを入力</label>
+            <div class="col-sm-offset-1 col-sm-9 col-xs-10">
+              <input class="form-control" type="text" name="user_id" id="form_name" maxlength="15">
+            </div>
+            <input type="hidden" name="group_id" value="{{ group.group_id }}">
+            <div class="col-sm-1 col-xs-2">
+              <button type="button" class="btn btn-primary pull-right" id="submit_request_join">招待</button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a href="{% url "ck.views.group_checklist_create" group.group_id %}">
+          リストを統合する
+        </a>
+      </h4>
+    </div>
+  </div>
+  </div>
+
+  {% if inviting_members %}
+    <h3>招待中のメンバー</h3>
+    <div class="row">
+      {% for member in inviting_members %}
+        <div class="members col-lg-3 col-md-4 col-xs-6">
+          {% if member.thumbnail %}<img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive" align="left">{% endif %}
+          <div class="members_data">
+            <strong>{{ member.first_name }}</strong><br>
+            {{ member.username }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h3>参加メンバー</h3>
+  <div class="row">
+    {% for member in members %}
+      <div class="members col-lg-3 col-md-4 col-xs-6">
+        {% if member.thumbnail %}<img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive" align="left">{% endif %}
+        <div class="members_data">
+          <strong>{{ member.first_name }}</strong><br>
+          {{ member.username }}
+          {% ifequal member me %}<br><button class="btn btn-default btn-sm" id="submit_leave_group">グループから抜ける</button>{% endifequal %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <h3>統合リスト</h3>
+  <table class="table">
+    {% for list in lists %}
+      <tr id="{{ list.list_id }}">
+        <td>{{ list.list_id }}</td>
+        <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
+        <td width="50"><a href="/checklist/{{ list.list_id }}/download" class="btn btn-default btn-sm">保存</a></td>
+        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" value="{{ list.list_id }}" name="{{ list.list_name }}">削除</button></td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <p><a href="/group/">グループ一覧へ</a></p>
+{% endblock %}

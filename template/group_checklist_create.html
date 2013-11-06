@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}チェックリストを統合 | {% endblock %}
+
+{% block style %}
+  <style>
+      .members {
+          margin: 5px;
+      }
+  </style>
+{% endblock %}
+
+{% block script %}
+  <script>
+  $(function() {
+      $("#form_name").val("{{ list_name }}");
+      {% if first %}
+          $(".form_first[value={{ first }}]").prop("checked", true);
+      {% endif %}
+      {% for list in lists %}
+         $(".form_list[value={{ list }}]").prop("checked", true);
+      {% endfor %}
+
+      $(".form_first").change(function() {
+          $(".form_list[value="+$(this).val()+"]").prop("checked", true);
+      });
+      $(".form_list").click(function() {
+          if (!$(this).prop("checked"))
+              $(".form_first[value="+$(this).val()+"]").prop("checked", false);
+      });
+  });
+  </script>
+{% endblock %}
+
+{% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
+{% endblock %}
+
+{% block content %}
+  <form method="post" id="form">{% csrf_token %}
+
+  <h3>チェックリストを統合</h3>
+
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
+  {% endifequal %}
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">リストの名前を入力してください</div>
+  {% endifequal %}
+  {% ifequal alert_code 3 %}
+    <div class="alert alert-danger" id="alert">統合するリストを選択してください</div>
+  {% endifequal %}
+  {% ifequal alert_code 4 %}
+    <div class="alert alert-danger" id="alert">リストの統合に失敗しました</div>
+  {% endifequal %}
+
+  <div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">チェックリストの統合設定</h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-group{% ifequal alert_code 2 %} has-error{% endifequal %}">
+          <label class="col-sm-offset-1 col-sm-3" for="form_name">チェックリストの名前</label>
+          <div class="col-sm-7">
+            <input class="form-control" type="text" name="list_name" id="form_name" maxlength="30" placeholder="30文字">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">統合するチェックリストを選択</h3>
+      </div>
+      <div class="panel-body">
+      {% for member in members %}{% if member.lists %}
+        <div class="row members">
+          <div class="col-xs-2">
+            {% if member.thumbnail %}
+              <img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive">
+            {% endif %}
+          </div>
+          <div class="col-xs-10">
+            <table class="table table-condensed">
+            <tr>
+              <td colspan="">{{ member.first_name }}</td>
+              <td width="80">統合リスト</td>
+              <td width="80">色設定</td>
+            </tr>
+            {% for list in member.lists %}
+              <tr>
+                <td>{{ list.list_name }}</td>
+                <td>
+                    <label>
+                      <input type="checkbox" name="list[]" class="form_list" value={{ list.id }} >
+                    </label>
+                </td>
+                <td>
+                    <label>
+                      <input type="radio" name="first" class="form_first" value="{{ list.id }}">
+                    </label>
+                </td>
+              </tr>
+            {% endfor %}
+            </table>
+          </div>
+        </div>
+      {% endif %}{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+      <input class="btn btn-primary pull-right" type="submit" id="submit" value="作成">
+    </div>
+  </div>
+  </form>
+
+{% endblock %}

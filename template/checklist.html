@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}チェックリスト | {% endblock %}
+
+{% block script %}
+  <script>
+  $(function() {
+      $(".submit_delete_list").click(function() {
+          if (confirm($(this).attr("name")+"を削除しますか？")) {
+              Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
+          }
+      });
+  });
+
+  function callback_delete_list(data) {
+      $("tr[id="+data.list_id+"]").fadeOut("slow");
+  }
+  </script>
+{% endblock %}
+
+{% block navbar-contents %}
+  <ul class="nav navbar-nav">
+    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
+    <li><a href={% url "ck.views.group" %}>グループ</a></li>
+    <li class="active"><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+  </ul>
+{% endblock %}
+
+{% block content %}
+  <h3>チェックリスト</h3>
+
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ list_name }}を読み込みました！</div>
+  {% endifequal %}
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">読み込むリストを選択してください</div>
+  {% endifequal %}
+  {% ifequal alert_code 3 %}
+    <div class="alert alert-danger" id="alert">リストの読み込みに失敗しました</div>
+  {% endifequal %}
+
+  <div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accodion" href="#collapse_body">
+          CSVチェックリストを読み込む
+        </a>
+      </h4>
+    </div>
+    <div id="collapse_body" class="panel-collapse collapse">
+      <div class="panel-body">
+        <form class="form-horizontal" method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
+          <label  class="col-sm-offset-1 col-sm-10" for="form_csv">読み込むCSVファイルを選択</label>
+          <div class="col-sm-offset-1 col-sm-8 col-xs-10">
+            <input type="file" name="csv" id="form_csv">
+          </div>
+          <div class="col-xs-2">
+            <input type="submit" class="btn btn-primary pull-right" id="submit" value="読み込み">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <h3>チェックリスト一覧</h3>
+  <table class="table">
+    {% for list in lists %}
+      <tr id="{{ list.list_id }}">
+        <td>{{ list.list_id }}</td>
+        <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
+        <td width="50"><a href="/checklist/{{ list.list_id }}/download" class="btn btn-default btn-sm">保存</a></td>
+        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" value="{{ list.list_id }}" name="{{ list.list_name }}">削除</button></td>
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}

@@ -1,11 +1,12 @@
 *~
 .*
 !.gitignore
+Thumbs.db
 .DS_Store
 .idea/
 *.pyc
 *.pyo
 
-api/
 settings.py
 ck.db
+media/
