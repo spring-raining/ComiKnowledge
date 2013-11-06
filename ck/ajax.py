@@ -62,9 +62,8 @@ def ajax_request_join(request, form):
 
 @dajaxice_register
 def ajax_verify_join(request, group_id):
-    print group_id
     g = CKGroup.objects.get(group_id=group_id)
-    verify_join(group_id, request.user.username)
+    verify_join(g, request.user)
     return json.dumps({"group_name": g.name, "group_id": g.group_id})
 
 
@@ -89,3 +88,10 @@ def ajax_import_list(request, form):
 def ajax_delete_list(request, list_id):
     if delete_list(list_id):
         return json.dumps({"list_id": list_id})
+
+
+@dajaxice_register
+def ajax_leave_group(request, group_id):
+    g = CKGroup.objects.get(group_id=group_id)
+    leave_group(g, request.user)
+    return json.dumps({})

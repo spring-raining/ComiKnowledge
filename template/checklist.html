@@ -6,7 +6,9 @@
   <script>
   $(function() {
       $(".submit_delete_list").click(function() {
-          Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).attr("id")});
+          if (confirm($(this).attr("name")+"を削除しますか？")) {
+              Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
+          }
       });
   });
 
@@ -72,7 +74,7 @@
         <td>{{ list.list_id }}</td>
         <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
         <td width="50"><a href="/checklist/{{ list.list_id }}/download" class="btn btn-default btn-sm">保存</a></td>
-        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" id="{{ list.list_id }}">削除</button></td>
+        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" value="{{ list.list_id }}" name="{{ list.list_name }}">削除</button></td>
       </tr>
     {% endfor %}
   </table>
