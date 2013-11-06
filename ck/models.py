@@ -138,36 +138,39 @@ class ListColor(models.Model):
     description = models.CharField(max_length=4000, null=True)
 
 #
-# Circle.Msデータベース形式で記録されるサークルのモデル
+# Circle.Msデータベース形式で記録されるサークルの抽象モデル
 #
 class ComiketCircle(models.Model):
                                                                         # ↓ Circle.Msデータベース作成時のSQL文
     comiket_number = models.PositiveSmallIntegerField()                 # comiketNo INTEGER not null, -- コミケ番号
     circle_id = models.IntegerField()                                   # id INTEGER not null,        -- サークルID
-    page_number = models.PositiveIntegerField()                         # pageNo      INTEGER,        -- ページ番号         漏れの場合は 0
-    cut_index = models.PositiveIntegerField()                           # cutIndex    INTEGER,        -- カットインデックス 漏れの場合は 0
-    day = models.DateField()                                            # day         INTEGER,        -- 参加日             漏れの場合は 0
-    block_id = models.PositiveIntegerField()                            # blockId     INTEGER,        -- ブロックID         漏れの場合は 0
-    space_number = models.PositiveIntegerField()                        # spaceNo     INTEGER,        -- スペース番号       漏れの場合は 0
-    space_number_sub = models.CharField(max_length=1,
-                                  choices=(("a","a"), ("b", "b")))      # spaceNoSub  INTEGER,	      -- スペース番号補助   0:a 1:b
-    genre_id = models.PositiveIntegerField()                            # genreId     INTEGER,        -- ジャンルID
+    page_number = models.PositiveIntegerField(null=True)                # pageNo      INTEGER,        -- ページ番号         漏れの場合は 0
+    cut_index = models.PositiveIntegerField(null=True)                  # cutIndex    INTEGER,        -- カットインデックス 漏れの場合は 0
+    day = models.DateField(null=True)                                   # day         INTEGER,        -- 参加日             漏れの場合は 0
+    block_id = models.PositiveIntegerField(null=True)                   # blockId     INTEGER,        -- ブロックID         漏れの場合は 0
+    space_number = models.PositiveIntegerField(null=True)               # spaceNo     INTEGER,        -- スペース番号       漏れの場合は 0
+    space_number_sub = models.CharField(max_length=1, null=True,
+                                  choices=(("a","a"), ("b", "b")))      # spaceNoSub  INTEGER,        -- スペース番号補助   0:a 1:b
+    genre_id = models.PositiveIntegerField(null=True)                   # genreId     INTEGER,        -- ジャンルID
     circle_name = models.CharField(max_length=100)                      # circleName  VARCHAR(33),    -- サークル名
     pen_name = models.CharField(max_length=100)                         # penName     VARCHAR(100),   -- 執筆者名
-    book_name = models.CharField(max_length=100)                        # bookName    VARCHAR(100),   -- 発行誌名
-    url = models.URLField(max_length=100)                               # url         VARCHAR(100),   -- URL
-    mail_address = models.CharField(max_length=100)                     # mailAddr    VARCHAR(100),   -- メールアドレス
-    description = models.CharField(max_length=4000)                     # description VARCHAR(4000),  -- 補足説明
-    memo = models.CharField(max_length=4000)                            # memo        VARCHAR(4000),  -- サークルメモ
-    update_id = models.IntegerField()                                   # updateId    INTEGER,        -- 更新用ID
-    update_data = models.CharField(max_length=4000)                     # updateData  VARCHAR(4000),  -- 更新情報
-    circlems_url = models.URLField(max_length=100)                      # circlems    VARCHAR(100),   -- Circle.ms URL
-    rss = models.CharField(max_length=100)                              # rss         VARCHAR(100),   -- RSS
-    update_flag = models.BooleanField()                                 # updateFlag  INTEGER,        -- 更新フラグ
+    book_name = models.CharField(max_length=100, null=True)             # bookName    VARCHAR(100),   -- 発行誌名
+    url = models.URLField(max_length=100, null=True)                    # url         VARCHAR(100),   -- URL
+    mail_address = models.CharField(max_length=100, null=True)          # mailAddr    VARCHAR(100),   -- メールアドレス
+    description = models.CharField(max_length=4000, null=True)          # description VARCHAR(4000),  -- 補足説明
+    memo = models.CharField(max_length=4000, null=True)                 # memo        VARCHAR(4000),  -- サークルメモ
+    update_id = models.IntegerField(null=True)                          # updateId    INTEGER,        -- 更新用ID
+    update_data = models.CharField(max_length=4000, null=True)          # updateData  VARCHAR(4000),  -- 更新情報
+    circlems_url = models.URLField(max_length=100, null=True)           # circlems    VARCHAR(100),   -- Circle.ms URL
+    rss = models.CharField(max_length=100, null=True)                   # rss         VARCHAR(100),   -- RSS
+    update_flag = models.IntegerField(null=True)                        # updateFlag  INTEGER,        -- 更新フラグ
     # ↓ Extend                                                          # ↓ Extend
     wc_id = models.IntegerField()                                       # WCId INTEGER not null,      -- 公開サークルID
-    twitter_url = models.URLField(max_length=256)                       # twitterURL  VARCHAR(256),   -- twitterURL
-    pixiv_url = models.URLField(max_length=256)                         # pixivURL    VARCHAR(256),   -- pixivURL
+    twitter_url = models.URLField(max_length=256, null=True)            # twitterURL  VARCHAR(256),   -- twitterURL
+    pixiv_url = models.URLField(max_length=256, null=True)              # pixivURL    VARCHAR(256),   -- pixivURL
+
+    class Meta:
+        abstract = True
 
 #
 # Circle.Msデータベース形式で記録されるジャンルのモデル
@@ -192,16 +195,50 @@ class ComiketDate(models.Model):
                                                                         # day     INTEGER,            -- 日
     weekday = models.CharField(max_length=1)                            # weekday INTEGER,            -- 曜日 (1:日 ～ 7:土)
 
+#
+# CircleKnowledge, CompanyKnowledgeにひもづけされる個々の情報の抽象モデル
+#
+class AbstractKnowledgeData(models.Model):
+    parent_user = models.ForeignKey("CKUser")
+    parent_group = models.ForeignKey("CKGroup", null=True)
+    write_at = models.DateTimeField(auto_now=True)
+    comiket_number = models.PositiveSmallIntegerField()
+    event_code = models.PositiveSmallIntegerField()
+    memo = models.CharField(max_length=50, null=True)
+    event_time = models.TimeField(null=True)
+    start_time = models.TimeField(null=True)
+    end_time = models.TimeField(null=True)
 
-# define.py
+    class Meta:
+        abstract = True
 
-class Define(models.Model):
-    pass
+#
+# ユーザーが入力するサークルの基本情報
+#
+class CircleKnowledge(ComiketCircle):
+    circle_knowledge_id = models.CharField(max_length=8)
+    knowledge = models.CharField(max_length=200, null=True)
 
-# original.py
+#
+# CircleKnowledgeにひもづけされるKnowledgeDataの実装
+#
+class CircleKnowledgeData(AbstractKnowledgeData):
+    parent_circle_knowledge = models.ForeignKey("CircleKnowledge")
 
-class OriginalCircle(models.Model):
-    pass
+#
+# ユーザーが入力する企業ブースの基本情報
+#
+class CompanyKnowledge(models.Model):
+    company_knowledge_id = models.CharField(max_length=8)
+    comiket_number = models.PositiveSmallIntegerField()
+    space_number = models.PositiveSmallIntegerField(null=True)
+    company_name = models.CharField(max_length=30)
+    url = models.URLField(max_length=256, null=True)
+    description = models.CharField(max_length=400, null=True)
+    knowledge = models.CharField(max_length=200, null=True)
 
-class OriginalMember(models.Model):
-    pass
+#
+# CircleKnowledgeにひもづけされるKnowledgeDataの実装
+#
+class CompanyKnowledgeData(AbstractKnowledgeData):
+    parent_company_knowledge = models.ForeignKey("CompanyKnowledge")
