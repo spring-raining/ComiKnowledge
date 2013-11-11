@@ -1,14 +1,11 @@
 {% extends "base.html" %}
 
-{% block navbar-contents %}
-  <ul class="nav navbar-nav">
-    <li class="active"><a href={% url "ck.views.home" %}>ホーム</a></li>
-    <li><a href={% url "ck.views.group" %}>グループ</a></li>
-    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
-  </ul>
-  <ul class="nav navbar-nav navbar-right">
-    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
-  </ul>
+{% block script %}
+  <script>
+      $(function() {
+          $("#navbar-home").addClass("active");
+      });
+  </script>
 {% endblock %}
 
 {% block content %}

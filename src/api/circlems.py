@@ -6,9 +6,9 @@ import json
 from ComiKnowledge.settings import *
 
 class Circlems:
-    def __init__(self):
-        self.access_token = None
-        self.refresh_token = None
+    def __init__(self, access_token=None, refresh_token=None):
+        self.access_token = access_token
+        self.refresh_token = refresh_token
 
     def _check_status(self, dic):
         status = dic["status"]
@@ -17,7 +17,7 @@ class Circlems:
         elif status == "access_token_denied":
             return False
         else:
-            pass #TODO
+            raise
 
     def authorization_url(self):
         url = CIRCLEMS_AUTH_URL + "OAuth2/"
@@ -31,7 +31,7 @@ class Circlems:
 
     def get_token(self, code):
         try:
-            url = CIRCLEMS_AUTH_URL + "/OAuth2/Token"
+            url = CIRCLEMS_AUTH_URL + "/OAuth2/Token/"
             params = {"grant_type":"authorization_code",
                       "client_id":CIRCLEMS_CLIENT_ID,
                       "client_secret":CIRCLEMS_CLIENT_SECRET,
@@ -50,9 +50,9 @@ class Circlems:
             return False
 
     def refresh(self):
-        url = CIRCLEMS_AUTH_URL + "/OAuth2/Token"
+        url = CIRCLEMS_AUTH_URL + "/OAuth2/Token/"
         if self.refresh_token is None:
-            return #TODO
+            raise
         params = {"grant_type":"refresh_token",
                   "client_id":CIRCLEMS_CLIENT_ID,
                   "client_secret":CIRCLEMS_CLIENT_SECRET,
@@ -75,7 +75,7 @@ class Circlems:
             return dic
 
     def query_circle(self, circle_name=None, genre=None, floor=None, sort=1, page=None, lastupdate=None):
-        url = CIRCLEMS_API_URL + "WebCatalog/QueryCircle"
+        url = CIRCLEMS_API_URL + "WebCatalog/QueryCircle/"
         params = {"access_token":self.access_token,
                   "event_id":CIRCLEMS_EVENT_ID,
                   "sort":sort}

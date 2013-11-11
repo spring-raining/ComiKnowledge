@@ -36,7 +36,7 @@
 
 <body>
   <div id="wrapper">
-  <nav class="navbar navbar-default navbar-fixed-top navbar-static-top">
+  <nav class="navbar navbar-inverse navbar-fixed-top navbar-static-top">
     <div class="navbar-header">
       <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-target">
         <span class="icon-bar"></span>
@@ -46,7 +46,16 @@
       <a href="/" class="navbar-brand">ComiKnowledge</a>
     </div>
     <div class="navbar-collapse collapse navbar-target">
-{% block navbar-contents %}{% endblock %}
+    {% block navbar-contents %}
+      <ul class="nav navbar-nav">
+        <li id="navbar-home"><a href={% url "ck.views.home" %}>ホーム</a></li>
+        <li id="navbar-group"><a href={% url "ck.views.group" %}>グループ</a></li>
+        <li id="navbar-checklist"><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+      </ul>
+    {% endblock %}
     </div>
   </nav>
 
