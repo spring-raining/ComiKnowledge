@@ -49,9 +49,14 @@ def request_join(group_id, username):
         return True
 
 # 招待されたグループに参加(verificationをTrueに)
-def verify_join(group_id, username):
-    g = CKGroup.objects.get(group_id=group_id)
-    u = CKUser.objects.get(username=username)
-    r = Relation.objects.get(ckgroup=g, ckuser=u)
+def verify_join(group, user):
+    r = Relation.objects.get(ckgroup=group, ckuser=user)
     r.verification = True
     r.save()
+
+# グループから抜ける(招待を拒否)
+def leave_group(group, user):
+    r = Relation.objects.get(ckgroup=group, ckuser=user)
+    r.delete()
+    if len(group.members.all()) == 0:
+        group.delete()

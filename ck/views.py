@@ -33,7 +33,7 @@ def home(request):
     invited_groups = []
     for i in request.user.ckgroup_set.all():
         r = Relation.objects.get(ckgroup=i, ckuser=request.user)
-        if r.verification == False:
+        if not r.verification:
             invited_groups.append(i)
 
     # サムネイル更新
@@ -90,7 +90,7 @@ def checklist_download(request, list_id):
         if not g.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
             raise Http404
         r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
-        if r.verification == False:
+        if not r.verification:
             raise Http404
 
         if request.method == "POST":
@@ -127,7 +127,7 @@ def checklist_edit(request, list_id):
         if not g.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
             raise Http404
         r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
-        if r.verification == False:
+        if not r.verification:
             raise Http404
 
     c = RequestContext(request,
@@ -143,7 +143,7 @@ def group(request):
     invited_groups = []
     for i in request.user.ckgroup_set.all():
         r = Relation.objects.get(ckgroup=i, ckuser=request.user)
-        if r.verification == True:
+        if r.verification:
             groups.append(i)
         else:
             invited_groups.append(i)
@@ -165,7 +165,7 @@ def group_home(request, group_id, **redirect_response):
     if not g.members.filter(id=request.user.id):                        # ユーザーがグループに属していない
         raise Http404
     r = Relation.objects.get(ckgroup=g, ckuser=request.user)            # ユーザーがまだグループに参加していない
-    if r.verification == False:
+    if not r.verification:
         raise Http404
 
     if request.GET.has_key("command"):
@@ -179,7 +179,7 @@ def group_home(request, group_id, **redirect_response):
         response.update(redirect_response)
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
-        if r.verification == True:
+        if r.verification:
             members.append(i)
         else:
             inviting_members.append(i)
@@ -187,6 +187,7 @@ def group_home(request, group_id, **redirect_response):
         member.lists = member.list_set.all()
     response["group"] = g
     response["members"] = members
+    response["me"] = request.user
     response["inviting_members"] = inviting_members
     response["lists"] = g.list_set.all()
     c = RequestContext(request, response)
@@ -204,7 +205,7 @@ def group_checklist_create(request, group_id):
     if not g.members.filter(id=request.user.id):                        # ユーザーがグループに属していない
         raise Http404
     r = Relation.objects.get(ckgroup=g, ckuser=request.user)            # ユーザーがまだグループに参加していない
-    if r.verification == False:
+    if not r.verification:
         raise Http404
 
     response = {}
@@ -237,7 +238,7 @@ def group_checklist_create(request, group_id):
     members = []
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
-        if r.verification == True:
+        if r.verification:
             members.append(i)
     for member in members:
         member.lists = member.list_set.all()

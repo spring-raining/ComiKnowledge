@@ -11,7 +11,7 @@
           margin: 10px;
       }
       .members_data {
-          margin: 28px 0;
+          margin: 15px 0;
       }
   </style>
 {% endblock %}
@@ -29,7 +29,14 @@
           Dajaxice.ck.ajax_update_group_description(callback_update_description, {"form":$("#form_update_description").serialize(true)});
       });
       $(".submit_delete_list").click(function() {
-          Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).attr("id")});
+          if (confirm($(this).attr("name")+"を削除しますか？")) {
+              Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
+          }
+      });
+      $("#submit_leave_group").click(function() {
+          if (confirm("{{ group.name }}から抜けますか？")) {
+              Dajaxice.ck.ajax_leave_group(callback_leave_group, {"group_id": "{{ group.group_id }}"});
+          }
       });
       $("#description").dblclick(function() {
           if (description == "説明文はありません") description = "";
@@ -71,18 +78,11 @@
   function callback_delete_list(data) {
       $("tr[id="+data.list_id+"]").fadeOut("slow");
   }
-  </script>
-{% endblock %}
 
-{% block navbar-contents %}
-  <ul class="nav navbar-nav">
-    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
-    <li><a href={% url "ck.views.group" %}>グループ</a></li>
-    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
-  </ul>
-  <ul class="nav navbar-nav navbar-right">
-    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
-  </ul>
+  function callback_leave_group(data) {
+      document.location = "{% url "ck.views.group" %}";
+  }
+  </script>
 {% endblock %}
 
 {% block content %}
@@ -170,6 +170,7 @@
         <div class="members_data">
           <strong>{{ member.first_name }}</strong><br>
           {{ member.username }}
+          {% ifequal member me %}<br><button class="btn btn-default btn-sm" id="submit_leave_group">グループから抜ける</button>{% endifequal %}
         </div>
       </div>
     {% endfor %}
@@ -182,7 +183,7 @@
         <td>{{ list.list_id }}</td>
         <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
         <td width="50"><a href="/checklist/{{ list.list_id }}/download" class="btn btn-default btn-sm">保存</a></td>
-        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" id="{{ list.list_id }}">削除</button></td>
+        <td width="50"><button class="btn btn-default btn-sm submit_delete_list" value="{{ list.list_id }}" name="{{ list.list_name }}">削除</button></td>
       </tr>
     {% endfor %}
   </table>
