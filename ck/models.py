@@ -153,7 +153,7 @@ class ComiketCircle(models.Model):
                                   choices=(("a","a"), ("b", "b")))      # spaceNoSub  INTEGER,        -- スペース番号補助   0:a 1:b
     genre_id = models.PositiveIntegerField(null=True)                   # genreId     INTEGER,        -- ジャンルID
     circle_name = models.CharField(max_length=100)                      # circleName  VARCHAR(33),    -- サークル名
-    pen_name = models.CharField(max_length=100)                         # penName     VARCHAR(100),   -- 執筆者名
+    pen_name = models.CharField(max_length=100, null=True)              # penName     VARCHAR(100),   -- 執筆者名
     book_name = models.CharField(max_length=100, null=True)             # bookName    VARCHAR(100),   -- 発行誌名
     url = models.URLField(max_length=100, null=True)                    # url         VARCHAR(100),   -- URL
     mail_address = models.CharField(max_length=100, null=True)          # mailAddr    VARCHAR(100),   -- メールアドレス

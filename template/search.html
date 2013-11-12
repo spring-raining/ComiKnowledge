@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h3>{{ keyword }}の検索結果</h3>
+
+  {% if not circles %}
+    <p>検索結果が見つかりませんでした</p>
+
+  {% endif %}
+  {% for circle in circles %}
+
+  {% endfor %}
+
+{% endblock %}

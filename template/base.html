@@ -13,9 +13,6 @@
   html, body {
       height: 100%;
   }
-  .content {
-      margin-top: 70px;
-  }
   #wrapper {
       min-height: 100%;
       height: auto !important;
@@ -30,13 +27,18 @@
 
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+<script>
+  $(function() {
+
+  });
+</script>
 {% dajaxice_js_import %}
 {% block script %}{% endblock %}
 </head>
 
 <body>
   <div id="wrapper">
-  <nav class="navbar navbar-inverse navbar-fixed-top navbar-static-top">
+  <nav class="navbar navbar-inverse navbar-static-top">
     <div class="navbar-header">
       <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-target">
         <span class="icon-bar"></span>
@@ -47,13 +49,26 @@
     </div>
     <div class="navbar-collapse collapse navbar-target">
     {% block navbar-contents %}
+      <div class="col-sm-3">
+        <form class="navbar-form" action="{% url "ck.views.search" %}" role="search" method="post">{% csrf_token %}
+          <div class="input-group">
+            <input type="text" class="form-control" name="keyword" placeholder="検索">
+            <div class="input-group-btn">
+              <button type="submit" class="btn btn-inverse"><span class="glyphicon glyphicon-search"></span></button>
+            </div>
+          </div>
+        </form>
+      </div>
       <ul class="nav navbar-nav">
-        <li id="navbar-home"><a href={% url "ck.views.home" %}>ホーム</a></li>
         <li id="navbar-group"><a href={% url "ck.views.group" %}>グループ</a></li>
         <li id="navbar-checklist"><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
+      {% if user.is_authenticated %}
         <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
+      {% else %}
+        <li><a href={% url "ck.views.login" %}>ログイン</a></li>
+      {% endif %}
       </ul>
     {% endblock %}
     </div>

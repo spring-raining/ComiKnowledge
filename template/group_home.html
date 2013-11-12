@@ -170,7 +170,7 @@
         <div class="members_data">
           <strong>{{ member.first_name }}</strong><br>
           {{ member.username }}
-          {% ifequal member me %}<br><button class="btn btn-default btn-sm" id="submit_leave_group">グループから抜ける</button>{% endifequal %}
+          {% ifequal member user %}<br><button class="btn btn-default btn-sm" id="submit_leave_group">グループから抜ける</button>{% endifequal %}
         </div>
       </div>
     {% endfor %}

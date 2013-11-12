@@ -5,11 +5,12 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 from django.core import serializers
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from social_auth.db.django_models import UserSocialAuth
 from dajaxice.decorators import dajaxice_register
+import urllib
 
 from ComiKnowledge import settings
 from ck.models import *
@@ -23,34 +24,35 @@ def index(request):
     t = loader.get_template("index.html")
     if request.user.is_authenticated():
         return HttpResponseRedirect("/home/")
-    c = RequestContext(request, {"version": "%s %s" % (src.APP_NAME, src.VERSION)})
-    return HttpResponse(t.render(c))
+    response = _base_response(request)
+    ctx = RequestContext(request, response)
+    return HttpResponse(t.render(ctx))
 
 
 @login_required
 def home(request):
+    response = _base_response(request)
     # 招待されているグループがあるかチェック
     invited_groups = []
     for i in request.user.ckgroup_set.all():
         r = Relation.objects.get(ckgroup=i, ckuser=request.user)
         if not r.verification:
             invited_groups.append(i)
+    response["invited_groups"] = invited_groups
 
     # サムネイル更新
     if not request.user.thumbnail or not os.path.exists(os.path.join(settings.MEDIA_ROOT, request.user.thumbnail.name)):
         usa = UserSocialAuth.objects.get(user_id=request.user.id)
         save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
 
-    ctx = RequestContext(request,
-                         {"user": request.user,
-                          "invited_groups": invited_groups})
+    ctx = RequestContext(request, response)
     return render_to_response("home.html", ctx)
 
 
 @login_required
 def checklist(request):
     alert_code = 0
-    response = {}
+    response = _base_response(request)
 
     # チェックリスト読み込み
     if request.method == "POST":
@@ -67,8 +69,8 @@ def checklist(request):
 
     response["alert_code"] = alert_code
     response["lists"] = request.user.list_set.all()
-    c = RequestContext(request, response)
-    return render_to_response("checklist.html", c)
+    ctx = RequestContext(request, response)
+    return render_to_response("checklist.html", ctx)
 
 
 @login_required
@@ -93,6 +95,7 @@ def checklist_download(request, list_id):
         if not r.verification:
             raise Http404
 
+        response = _base_response(request)
         if request.method == "POST":
             response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
             response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
@@ -105,10 +108,10 @@ def checklist_download(request, list_id):
         for i in l.listcolor_set.all():
             if i.check_color:
                 color[i.color_number] = "#" + i.check_color
-        c = RequestContext(request, {"list": l,
-                                     "color": color,
-                                     "default_color": src.DEFAULT_COLOR})
-        return render_to_response("checklist_download.html", c)
+        response["list"] = l
+        response["color"] = color
+        ctx = RequestContext(request, response)
+        return render_to_response("checklist_download.html", ctx)
 
 
 @login_required
@@ -130,10 +133,11 @@ def checklist_edit(request, list_id):
         if not r.verification:
             raise Http404
 
-    c = RequestContext(request,
-                       {"list": l,
-                       "circles": l.listcircle_set.all()})
-    return render_to_response("checklist_edit.html", c)
+    response = _base_response(request)
+    response["list"] = l
+    response["circles"] = l.listcircle_set.all()
+    ctx = RequestContext(request, response)
+    return render_to_response("checklist_edit.html", ctx)
 
 
 @login_required
@@ -141,17 +145,18 @@ def group(request):
     alert_code = 0
     groups = []
     invited_groups = []
+    response = _base_response(request)
     for i in request.user.ckgroup_set.all():
         r = Relation.objects.get(ckgroup=i, ckuser=request.user)
         if r.verification:
             groups.append(i)
         else:
             invited_groups.append(i)
-    c = RequestContext(request,
-                       {"groups": groups,
-                        "invited_groups": invited_groups,
-                        "alert_code": alert_code})
-    return render_to_response("group.html", c)
+    response["groups"] = groups
+    response["inviged_groups"] = invited_groups
+    response["alert_code"] = alert_code
+    ctx = RequestContext(request, response)
+    return render_to_response("group.html", ctx)
 
 
 @login_required
@@ -168,13 +173,9 @@ def group_home(request, group_id, **redirect_response):
     if not r.verification:
         raise Http404
 
-    if request.GET.has_key("command"):
-        if request.GET["command"] == "leave":
-            pass
-
     members = []
     inviting_members = []
-    response = {}
+    response = _base_response(request)
     if redirect_response:
         response.update(redirect_response)
     for i in g.members.all():
@@ -187,7 +188,6 @@ def group_home(request, group_id, **redirect_response):
         member.lists = member.list_set.all()
     response["group"] = g
     response["members"] = members
-    response["me"] = request.user
     response["inviting_members"] = inviting_members
     response["lists"] = g.list_set.all()
     c = RequestContext(request, response)
@@ -208,7 +208,7 @@ def group_checklist_create(request, group_id):
     if not r.verification:
         raise Http404
 
-    response = {}
+    response = _base_response(request)
     alert_code = 0
     if request.method == "POST":
         response["list_name"] = request.POST["list_name"]
@@ -249,6 +249,31 @@ def group_checklist_create(request, group_id):
     return render_to_response("group_checklist_create.html", c)
 
 
+def search(request):
+    if request.method == "POST":                                    # 検索窓からのPOST
+        if not request.POST["keyword"]:
+            return HttpResponseNotModified()
+        kw = request.POST["keyword"].encode("utf-8")
+        query = urllib.urlencode({"keyword": kw})
+        return HttpResponseRedirect("/search?" + query)
+    if not request.GET.has_key("keyword"):                          # keywordがない
+        return HttpResponseRedirect("/")
+
+    response = _base_response(request)
+    response["keyword"] = request.GET["keyword"]
+    keywords = request.GET["keyword"].split()
+    ctx = RequestContext(request, response)
+    return render_to_response("search.html", ctx)
+
+
+def circle(request, circle_id):
+    pass
+
+
+def circle_register(request):
+    pass
+
+
 def login(request):
     return HttpResponseRedirect("/login/twitter/")
 
@@ -256,3 +281,9 @@ def login(request):
 def logout(request):
     auth_logout(request)
     return HttpResponseRedirect("/")
+
+
+def _base_response(request):
+    return {"user": request.user,
+            "version": "%s %s" % (src.APP_NAME, src.VERSION),
+            "default_color": src.DEFAULT_COLOR}
