@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block script %}
+  <script>
+      $(function() {
+          $("form input, select, textarea").addClass("form-control");
+          {% if form.day.errors %}$("#id_day").parents(".form-group").addClass("has-error");
+          {% elif form.block_id.errors %}$("#id_block_id").parents(".form-group").addClass("has-error");
+          {% elif form.space_number.errors %}$("#id_space_number").parents(".form-group").addClass("has-error");
+          {% elif form.space_number_sub.errors %}$("#id_space_number_sub").parents(".form-group").addClass("has-error");{% endif %}
+          {% if form.circle_name.errors %}$("#id_circle_name").parents(".form-group").addClass("has-error");{% endif %}
+          {% if form.url.errors %}$("#id_url").parents(".form-group").addClass("has-error");{% endif %}
+          {% if form.twitter_url.errors %}$("#id_twitter_url").parents(".form-group").addClass("has-error");{% endif %}
+          {% if form.pixiv_url.errors %}$("#id_pixiv_url").parents(".form-group").addClass("has-error");{% endif %}
+      });
+  </script>
+{% endblock %}
+
+{% block content %}
+
+  <h3>サークルを登録</h3>
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">入力された値を確認してください</div>
+  {% endifequal %}
+  <form class="form-horizontal" action="{% url "ck.views.circle_register"%}" method="post">{% csrf_token %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">サークルの情報</h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2 col-xs-12">スペース番号<br>(必須)</label>
+          <div class="col-sm-2 col-xs-3">{{ form.day }}</div>
+          <div class="col-sm-2 col-xs-3">{{ form.block_id }}</div>
+          <div class="col-sm-2 col-xs-3">{{ form.space_number }}</div>
+          <div class="col-sm-2 col-xs-3">{{ form.space_number_sub }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2" for="id_circle_name">サークル名<br>(必須)</label>
+          <div class="col-sm-8">{{ form.circle_name }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2" for="id_pen_name">執筆者名</label>
+          <div class="col-sm-8">{{ form.pen_name }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2" for="id_url">サークルURL</label>
+          <div class="col-sm-8">{{ form.url }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2" for="id_description">サークル説明</label>
+          <div class="col-sm-8">{{ form.description }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2" for="id_twitter_url">Twitter URL</label>
+          <div class="col-sm-8">{{ form.twitter_url }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-offset-1 col-sm-2" for="id_pixiv_url">Pixiv URL</label>
+          <div class="col-sm-8">{{ form.pixiv_url }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-offset-1 col-sm-10">
+      <button type="submit" class="btn btn-primary pull-right">登録</button>
+    </div>
+  </form>
+{% endblock %}

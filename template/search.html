@@ -4,8 +4,10 @@
   <h3>{{ keyword }}の検索結果</h3>
 
   {% if not circles %}
-    <p>検索結果が見つかりませんでした</p>
-
+    <div class="alert alert-warning">
+      見つかりませんでした。
+      <a href="{% url "ck.views.circle_register" %}" class="alert-link">サークルを登録する</a>
+    </div>
   {% endif %}
   {% for circle in circles %}
 

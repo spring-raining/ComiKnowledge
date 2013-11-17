@@ -14,6 +14,7 @@ import urllib
 
 from ComiKnowledge import settings
 from ck.models import *
+from ck.forms import *
 import src
 from src.api.twitter import *
 from src.data.list import *
@@ -270,8 +271,29 @@ def circle(request, circle_id):
     pass
 
 
+@login_required
 def circle_register(request):
-    pass
+    response = _base_response(request)
+    alert_code = 0
+    if request.method == "POST":
+        form = CircleRegisterForm(request.POST)
+        if not form.is_valid():
+            alert_code = 2
+            response["invalid"] = form.errors
+        else:
+            ckd = form.save(commit=False)
+            ckd_val = ckd.validate_circle()
+            if isinstance(ckd_val, CircleKnowledge):
+                raise
+            elif ckd_val is True:
+                alert_code = 1
+                ckd.save()
+    else:
+        form = CircleRegisterForm()
+    response["form"] = form
+    response["alert_code"] = alert_code
+    ctx = RequestContext(request, response)
+    return render_to_response("circle_register.html", ctx)
 
 
 def login(request):
@@ -286,4 +308,5 @@ def logout(request):
 def _base_response(request):
     return {"user": request.user,
             "version": "%s %s" % (src.APP_NAME, src.VERSION),
-            "default_color": src.DEFAULT_COLOR}
+            "default_color": src.DEFAULT_COLOR,
+            "block_id": src.BLOCK_ID}

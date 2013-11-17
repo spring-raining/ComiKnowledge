@@ -53,15 +53,22 @@ class Circlems:
         url = CIRCLEMS_AUTH_URL + "/OAuth2/Token/"
         if self.refresh_token is None:
             raise
-        params = {"grant_type":"refresh_token",
-                  "client_id":CIRCLEMS_CLIENT_ID,
-                  "client_secret":CIRCLEMS_CLIENT_SECRET,
-                  "redirect_uri":CIRCLEMS_REDIRECT_URL,
-                  "access_token":self.access_token,
-                  "refresh_token":self.refresh_token}
-        headers = {'content-type': 'application/x-www-form-urlencoded'}
-        req = requests.post(url, params=params, headers=headers)
-        return req.text
+        try:
+            params = {"grant_type":"refresh_token",
+                      "client_id":CIRCLEMS_CLIENT_ID,
+                      "client_secret":CIRCLEMS_CLIENT_SECRET,
+                      "refresh_token":self.refresh_token}
+            headers = {'content-type': 'application/x-www-form-urlencoded'}
+            req = requests.post(url, params=params, headers=headers)
+            dic = json.loads(req.text)
+            if "access_token" and "refresh_token" in dic:
+                self.access_token = dic["access_token"]
+                self.refresh_token = dic["refresh_token"]
+                return True
+            else:
+                return False
+        except:
+            return False
 
     def all(self):
         url = CIRCLEMS_API_URL + "CatalogBase/All/"
