@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}{{ keyword }}の検索結果 | {% endblock %}
+
 {% block content %}
   <h3>{{ keyword }}の検索結果</h3>
 
@@ -26,11 +28,13 @@
       </div>
       <table class="table">
         <tr>
-          <td>{% for k, v in block_id.items %}{% ifequal k circle.block_id %}{{ circle.day }}日目 {{ v }}{{ circle.space_number }}{{ circle.space_number_sub }}{% endifequal %}{% endfor %}</td>
+          <td>{{ circle.day }}日目 {{ circle.circle_space }}</td>
         </tr>
+        {% if circle.description %}
         <tr>
           <td>{{ circle.description }}</td>
         </tr>
+        {% endif %}
       </table>
     </div>
   {% endfor %}

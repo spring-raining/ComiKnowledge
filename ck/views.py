@@ -252,13 +252,13 @@ def group_checklist_create(request, group_id):
 
 
 def search(request):
-    if request.method == "POST":                                    # 検索窓からのPOST
+    if request.method == "POST":                                        # 検索窓からのPOST
         if not request.POST["keyword"]:
             return HttpResponseNotModified()
         kw = request.POST["keyword"].encode("utf-8")
         query = urllib.urlencode({"keyword": kw})
         return HttpResponseRedirect("/search?" + query)
-    if not request.GET.has_key("keyword"):                          # keywordがない
+    if not request.GET.has_key("keyword"):                              # keywordがない
         return HttpResponseRedirect("/")
 
     response = _base_response(request)
@@ -276,7 +276,7 @@ def search(request):
     for q in query:
         try:
             _q = q.circleknowledgedata_set.all()
-            circles.append(sorted(_q, key=lambda x: x.comiket_number)[0])
+            circles.append(sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0])
         except:
             pass
     response["circles"] = circles
@@ -284,8 +284,26 @@ def search(request):
     return render_to_response("search.html", ctx)
 
 
-def circle(request, circle_id):
-    pass
+def circle(request, circle_id, **redirect_response):
+    try:
+        ck = CircleKnowledge.objects.get(circle_knowledge_id=circle_id)
+    except:                                                             # circle_idがおかしい
+        raise Http404
+    try:
+        ckd = ck.circleknowledgedata_set.filter(comiket_number=src.COMIKET_NUMBER)[0]
+    except:                                                             # 最新のCircleKnowledgeDataがない
+        _q = ck.circleknowledgedata_set.all()
+        ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
+
+    print ckd.circle_space
+    response = _base_response(request)
+    if redirect_response:
+        response.update(redirect_response)
+    response["circle_knowledge"] = ck
+    response["circles"] = ck.circleknowledgedata_set.all()
+    response["circle_data"] = ckd
+    ctx = RequestContext(request, response)
+    return render_to_response("circle.html", ctx)
 
 
 @login_required
@@ -303,8 +321,8 @@ def circle_register(request):
             if isinstance(ckd_val, CircleKnowledge):
                 raise
             elif ckd_val is True:
-                alert_code = 1
                 ckd.save()
+                return circle(request, ckd.parent_circle_knowledge.circle_knowledge_id, alert_code=1)
     else:
         form = CircleRegisterForm()
     response["form"] = form

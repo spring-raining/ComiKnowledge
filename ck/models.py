@@ -258,6 +258,16 @@ class CircleKnowledgeData(ComiketCircle):
             self.parent_circle_knowledge = ck
         return True
 
+    def _get_circle_space(self):
+        try:
+            if self.block_id and self.space_number and self.space_number_sub:
+                return src.BLOCK_ID[self.block_id] + str(self.space_number) + str(self.space_number_sub)
+            else:
+                return None
+        except IndexError:
+            return None
+    circle_space = property(_get_circle_space)
+
 #
 # CircleKnowledgeにひもづけされるKnowledgeDataの実装
 #

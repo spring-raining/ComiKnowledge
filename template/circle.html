@@ -1,1 +1,36 @@
 {% extends "base.html" %}
+
+{% block title %}{{ circle_data.circle_name }} | {% endblock %}
+
+{% block content %}
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ circle_data.circle_name }}を登録しました！</div>
+  {% endifequal %}
+
+  <h2>{{ circle_data.circle_name }}</h2>
+  <h4>{{ circle_data.pen_name }}</h4>
+  <h4>{{ circle_data.day }}日目 {{ circle_data.circle_space }}</h4>
+  <p class="lead">{{ circle_data.description }}</p>
+  <ul class="list-group">
+    {% if circle_data.wc_id %}
+      <a href="https://webcatalog.circle.ms/Circle/{{ circle_data.wc_id }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Webカタログ: https://webcatalog.circle.ms/Circle/{{ circle_data.wc_id }}</p></a>
+    {% else %}
+      <li class="list-group-item">Webカタログ:</li>
+    {% endif %}
+    {% if circle_data.url %}
+      <a href="{{ circle_data.url }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Webサイト: {{ circle_data.url }}</p></a>
+    {% else %}
+      <li class="list-group-item">Webサイト:</li>
+    {% endif %}
+    {% if circle_data.twitter_url %}
+      <a href="{{ circle_data.twitter_url }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Twitter: {{ circle_data.twitter_url }}</p></a>
+    {% else %}
+      <li class="list-group-item">Twitter:</li>
+    {% endif %}
+    {% if circle_data.pixiv_url %}
+      <a href="{{ circle_data.pixiv_url }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Pixiv: {{ circle_data.pixiv_url }}</p></a>
+    {% else %}
+      <li class="list-group-item">Pixiv:</li>
+    {% endif %}
+  </ul>
+{% endblock %}
