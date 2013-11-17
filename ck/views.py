@@ -5,6 +5,7 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 from django.core import serializers
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
@@ -263,6 +264,22 @@ def search(request):
     response = _base_response(request)
     response["keyword"] = request.GET["keyword"]
     keywords = request.GET["keyword"].split()
+    query = CircleKnowledge.objects
+    if len(keywords) == 0:
+        keywords.append("")
+    for k in keywords:
+        query = query.filter(
+            Q(circleknowledgedata__circle_name__icontains=k)|
+            Q(circleknowledgedata__pen_name__icontains=k)|
+            Q(circleknowledgedata__description__icontains=k))
+    circles = []
+    for q in query:
+        try:
+            _q = q.circleknowledgedata_set.all()
+            circles.append(sorted(_q, key=lambda x: x.comiket_number)[0])
+        except:
+            pass
+    response["circles"] = circles
     ctx = RequestContext(request, response)
     return render_to_response("search.html", ctx)
 

@@ -8,9 +8,31 @@
       見つかりませんでした。
       <a href="{% url "ck.views.circle_register" %}" class="alert-link">サークルを登録する</a>
     </div>
+  {% else %}
+    <div class="alert alert-success">
+      {{ circles | length }}件のサークルが見つかりました<br>
+      　→見つかりませんでしたか？　<a href="{% url "ck.views.circle_register" %}" class="alert-link">サークルを登録する</a>
+    </div>
   {% endif %}
   {% for circle in circles %}
-
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="panel-title">
+          <a href="{% url "ck.views.circle" circle.parent_circle_knowledge.circle_knowledge_id %}">
+            <strong>{{ circle.circle_name }}</strong>
+            <div class="pull-right">{{ circle.pen_name }}</div>
+          </a>
+        </div>
+      </div>
+      <table class="table">
+        <tr>
+          <td>{% for k, v in block_id.items %}{% ifequal k circle.block_id %}{{ circle.day }}日目 {{ v }}{{ circle.space_number }}{{ circle.space_number_sub }}{% endifequal %}{% endfor %}</td>
+        </tr>
+        <tr>
+          <td>{{ circle.description }}</td>
+        </tr>
+      </table>
+    </div>
   {% endfor %}
 
 {% endblock %}
