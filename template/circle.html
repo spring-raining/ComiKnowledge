@@ -6,6 +6,9 @@
   {% ifequal alert_code 1 %}
     <div class="alert alert-success" id="alert">{{ circle_data.circle_name }}を登録しました！</div>
   {% endifequal %}
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">{{ circle_data.day }}日目 {{ circle_data.circle_space }}はすでに登録されています</div>
+  {% endifequal %}
 
   <h2>{{ circle_data.circle_name }}</h2>
   <h4>{{ circle_data.pen_name }}</h4>

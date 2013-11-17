@@ -12,10 +12,37 @@
     </div>
   {% else %}
     <div class="alert alert-success">
-      {{ circles | length }}件のサークルが見つかりました<br>
+      {{ p_circles.count }}件のサークルが見つかりました<br>
       　→見つかりませんでしたか？　<a href="{% url "ck.views.circle_register" %}" class="alert-link">サークルを登録する</a>
     </div>
+
+    <center>
+    <div class="pagination">
+      {% if circles.has_previous %}
+        <li><a href="?keyword={{ request.GET.keyword }}&page=1">|&lt;</a></li>
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ circles.previous_page_number }}">&lt;</a></li>
+      {% else %}
+        <li class="disabled"><a>|&lt;</a></li>
+        <li class="disabled"><a>&lt;</a></li>
+      {% endif %}
+    {% for p in pages %}
+      {% ifequal p circles.number %}
+        <li class="active"><a>{{ p }}</a></li>
+      {% else %}
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ p }}">{{ p }}</a></li>
+      {% endifequal %}
+    {% endfor %}
+      {% if circles.has_next %}
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ circles.next_page_number }}">&gt;</a></li>
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ p_circles.num_pages }}">&gt;|</a></li>
+      {% else %}
+        <li class="disabled"><a>&gt;</a></li>
+        <li class="disabled"><a>&gt;|</a></li>
+      {% endif %}
+    </div>
+    </center>
   {% endif %}
+
   {% for circle in circles %}
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -38,5 +65,32 @@
       </table>
     </div>
   {% endfor %}
+
+  {% if circles %}
+    <center>
+    <div class="pagination">
+      {% if circles.has_previous %}
+        <li><a href="?keyword={{ request.GET.keyword }}&page=1">|&lt;</a></li>
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ circles.previous_page_number }}">&lt;</a></li>
+      {% else %}
+        <li class="disabled"><a>|&lt;</a></li>
+        <li class="disabled"><a>&lt;</a></li>
+      {% endif %}
+    {% for p in pages %}
+      {% ifequal p circles.number %}
+        <li class="active"><a>{{ p }}</a></li>
+      {% else %}
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ p }}">{{ p }}</a></li>
+      {% endifequal %}
+    {% endfor %}
+      {% if circles.has_next %}
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ circles.next_page_number }}">&gt;</a></li>
+        <li><a href="?keyword={{ request.GET.keyword }}&page={{ p_circles.num_pages }}">&gt;|</a></li>
+      {% else %}
+        <li class="disabled"><a>&gt;</a></li>
+        <li class="disabled"><a>&gt;|</a></li>
+      {% endif %}
+    </div>
+    </center>  {% endif %}
 
 {% endblock %}

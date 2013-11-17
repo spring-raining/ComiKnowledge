@@ -4,7 +4,7 @@ import os
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
-from django.core import serializers
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404
 from django.shortcuts import render_to_response
@@ -279,7 +279,22 @@ def search(request):
             circles.append(sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0])
         except:
             pass
-    response["circles"] = circles
+    p_circles = Paginator(circles, 20)
+    try:
+        page = int(request.GET.get("page", "1"))
+        if page > p_circles.num_pages or page < 1:
+            page = 1
+    except ValueError:
+        page = 1
+    pages = [page]
+    while len(pages) < 5 and len(pages) < p_circles.num_pages:
+        if pages[0] != 1:
+            pages.insert(0, pages[0]-1)
+        if pages[-1] != p_circles.num_pages:
+            pages.append(pages[-1]+1)
+    response["p_circles"] = p_circles
+    response["circles"] = p_circles.page(page)
+    response["pages"] = pages
     ctx = RequestContext(request, response)
     return render_to_response("search.html", ctx)
 
@@ -319,7 +334,7 @@ def circle_register(request):
             ckd = form.save(commit=False)
             ckd_val = ckd.validate_circle()
             if isinstance(ckd_val, CircleKnowledge):
-                raise
+                return circle(request, ckd_val.circle_knowledge_id, alert_code=2)
             elif ckd_val is True:
                 ckd.save()
                 return circle(request, ckd.parent_circle_knowledge.circle_knowledge_id, alert_code=1)
