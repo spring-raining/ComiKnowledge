@@ -89,6 +89,26 @@ def ajax_delete_list(request, list_id):
     if delete_list(list_id):
         return json.dumps({"list_id": list_id})
 
+@dajaxice_register
+def ajax_create_list(request, form):
+    print "a"
+    post = deserialize_form(form)
+    response = {}
+    if request.method != "POST":
+        return
+    if not post["list_name"]:
+        alert_code = 2
+    else:
+        try:
+            l = create_list(post["list_name"], request.user)
+            response["list_name"] = l.list_name
+            response["list_id"] = l.list_id
+            alert_code = 1
+        except:
+            alert_code = 3
+    response["alert_code"] = alert_code
+    return json.dumps(response)
+
 
 @dajaxice_register
 def ajax_leave_group(request, group_id):

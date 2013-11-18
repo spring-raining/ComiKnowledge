@@ -111,6 +111,22 @@ def import_list(csv_file, parent_user):
     return l
 
 
+def create_list(list_name, parent_user):
+    l = List()
+    l.list_name = list_name
+    l.parent_user = parent_user
+    while True:
+        g = generate_rand_str(8)
+        try:
+            List.objects.get(list_id=g)
+        except:
+            break
+    l.list_id = g
+    l.header_name = src.HEADER_NAME
+    l.header_id = "%s %s" % (src.APP_NAME, str(src.VERSION))
+    l.save()
+    return l
+
 def delete_list(list_id):
     try:
         l = List.objects.get(list_id=list_id)
@@ -145,7 +161,7 @@ def merge_list(lists, group, list_name):
         except:
             break
     l.list_id = g
-    l.header_name = "ComicMarketCD-ROMCatalog"
+    l.header_name = src.HEADER_NAME
     l.header_encoding = "UTF-8"
     l.header_id = "%s %s" % (src.APP_NAME, str(src.VERSION))
     l.last_select_page = None
