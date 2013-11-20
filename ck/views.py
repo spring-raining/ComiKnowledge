@@ -310,7 +310,6 @@ def circle(request, circle_id, **redirect_response):
         _q = ck.circleknowledgedata_set.all()
         ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
 
-    print ckd.circle_space
     response = _base_response(request)
     if redirect_response:
         response.update(redirect_response)

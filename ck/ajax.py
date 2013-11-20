@@ -109,9 +109,14 @@ def ajax_create_list(request, form):
     response["alert_code"] = alert_code
     return json.dumps(response)
 
-
 @dajaxice_register
 def ajax_leave_group(request, group_id):
     g = CKGroup.objects.get(group_id=group_id)
     leave_group(g, request.user)
     return json.dumps({})
+
+@dajaxice_register
+def ajax_delete_listcircle(request, listcircle_id):
+    l = ListCircle.objects.get(id=listcircle_id)
+    l.delete()
+    return json.dumps({"id": listcircle_id})
