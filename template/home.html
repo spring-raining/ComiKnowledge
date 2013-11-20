@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 
+{% block style %}
+  <style>
+      .user-list {
+          height: 105px;
+      }
+      .user-data {
+          margin-top: 21px;
+          margin-left: 90px;
+      }
+  </style>
+{% endblock %}
+
 {% block script %}
   <script>
   </script>
@@ -14,13 +26,43 @@
     </div>
   {% endif %}
 
-  <div>
-  <h3>User data:</h3>
-    {% if user.thumbnail %}<img src="{{ user.thumbnail.url }}" class="">{% endif %}
-    <table class="table">
-      <tr><th>ID</th> <td>{{ user.id }}</td></tr>
-      <tr><th>UserID</th> <td>{{ user.username }}</td></tr>
-      <tr><th>Username</th> <td>{{ user.first_name }}</td></tr>
-    </table>
+  <div class="row">
+    <div class="col-sm-4">
+      <ul class="list-group">
+      <a class="list-group-item user-list">
+        {% if user.thumbnail %}<img src="{{ user.thumbnail.url }}" class="img-thumbnail img-responsive" align="left">{% endif %}
+        <div class="user-data">
+          <strong>{{ user.first_name }}</strong><br>
+          {{ user.username }}
+        </div>
+      </a>
+      </ul>
+    </div>
+    <div class="col-sm-8">
+      <ul class="list-group">
+        <li class="list-group-item">
+          <h4>サークル名・ペンネームで検索</h4>
+          <form class="form-horizontal" action="{% url "ck.views.search" %}" role="search" method="post">{% csrf_token %}
+            <div class="form-group">
+              <div class="col-xs-10">
+                <label class="sr-only" for="form-home-search">検索</label>
+                <input type="text" class="form-control" id="form-home-search" name="keyword" placeholder="検索">
+              </div>
+              <div class="col-xs-2">
+                <button type="submit" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-search"></span></button>
+              </div>
+            </div>
+          </form>
+        </li>
+      </ul>
+
+      <ul class="list-group">
+        <a class="list-group-item" href="https://twitter.com/comiketofficial"><h4>@comiketofficial</h4></a>
+        <li class="list-group-item">
+          <a class="twitter-timeline" href="https://twitter.com/comiketofficial" data-widget-id="402990761966182400" data-chrome="noheader transparent" lang="ja">@comiketofficial からのツイート</a>
+          <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        </li>
+      </ul>
+    </div>
   </div>
 {% endblock %}
