@@ -346,7 +346,11 @@ def circle_register(request):
 
 
 def login(request):
-    return HttpResponseRedirect("/login/twitter/")
+    response = _base_response(request)
+    if request.user.is_authenticated():
+        return HttpResponseRedirect("/")
+    ctx = RequestContext(request, response)
+    return render_to_response("login.html", ctx)
 
 
 def logout(request):

@@ -70,18 +70,25 @@ class Circlems:
         except:
             return False
 
-    def all(self):
+    def all(self, refreshed=False):
         url = CIRCLEMS_API_URL + "CatalogBase/All/"
         params = {"access_token":self.access_token,
                   "event_id":CIRCLEMS_EVENT_ID}
         req = requests.get(url, params=params)
-        dic = json.loads(req.text)
+        try:
+            dic = json.loads(req.text)
+        except ValueError:
+            return None
         if not self._check_status(dic):
-            return self.refresh()
+            if not refreshed:
+                self.refresh()
+                return self.all(refreshed=True)
+            else:
+                return dic
         else:
             return dic
 
-    def query_circle(self, circle_name=None, genre=None, floor=None, sort=1, page=None, lastupdate=None):
+    def query_circle(self, refreshed=False, circle_name=None, genre=None, floor=None, sort=1, page=None, lastupdate=None):
         url = CIRCLEMS_API_URL + "WebCatalog/QueryCircle/"
         params = {"access_token":self.access_token,
                   "event_id":CIRCLEMS_EVENT_ID,
@@ -97,16 +104,38 @@ class Circlems:
         if lastupdate is not None:
             params["lastupdate"] = lastupdate
         req = requests.get(url, params=params)
-        return req.text
+        try:
+            dic = json.loads(req.text)
+        except ValueError:
+            return None
+        if not self._check_status(dic):
+            if not refreshed:
+                self.refresh()
+                return self.query_circle(refreshed=True, circle_name=circle_name, genre=genre, floor=floor, sort=sort, page=page, lastupdate=lastupdate)
+            else:
+                return dic
+        else:
+            return dic
 
-    def get_circle(self, wcid):
+    def get_circle(self, wcid, refreshed=False):
         url = CIRCLEMS_API_URL + "WebCatalog/GetCircle/"
         params = {"access_token":self.access_token,
                   "wcid":wcid}
         req = requests.get(url, params=params)
-        return req.text
+        try:
+            dic = json.loads(req.text)
+        except ValueError:
+            return None
+        if not self._check_status(dic):
+            if not refreshed:
+                self.refresh()
+                return self.get_circle(wcid, refreshed=True)
+            else:
+                return dic
+        else:
+            return dic
 
-    def favorite_circles(self, circle_name=None, genre=None, floor=None, sort=1, page=None, lastupdate=None):
+    def favorite_circles(self, refreshed=False, circle_name=None, genre=None, floor=None, sort=1, page=None, lastupdate=None):
         url = CIRCLEMS_API_URL + "Readers/FavoriteCircles/"
         params = {"access_token":self.access_token,
                   "event_id":CIRCLEMS_EVENT_ID,
@@ -121,9 +150,20 @@ class Circlems:
             params["page"] = page
         if lastupdate is not None:
             params["lastupdate"] = lastupdate
+        print params
         req = requests.get(url, params=params)
-        return req.text
-
+        try:
+            dic = json.loads(req.text)
+        except ValueError:
+            return None
+        if not self._check_status(dic):
+            if not refreshed:
+                self.refresh()
+                return self.favorite_circles(refreshed=True, circle_name=circle_name, genre=genre, floor=floor, sort=sort, page=page, lastupdate=lastupdate)
+            else:
+                return dic
+        else:
+            return dic
 
 if __name__ == "__main__":
     # お願いしますテストは書かないでください何でもしますから！
