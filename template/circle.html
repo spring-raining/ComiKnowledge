@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}{{ circle_data.circle_name }} | {% endblock %}
+
+{% block style %}
+  <style>
+      div .dropdown-menu {
+          padding: 10px;
+      }
+  </style>
+{% endblock %}
+
+{% block script %}
+  <script>
+      $(function() {
+      {% if user.is_authenticated %}
+          default_color = ["#{{ default_color.1 }}","#{{ default_color.2 }}","#{{ default_color.3 }}","#{{ default_color.4 }}","#{{ default_color.5 }}","#{{ default_color.6 }}","#{{ default_color.7 }}","#{{ default_color.8 }}","#{{ default_color.9 }}"];
+          $(".select-color")
+              .css("width", "32px")
+              .css("height", "32px")
+              .css("margin", "10px")
+              .each(function(index, element) {
+                  $(element).css("background-color", default_color[index%9]);
+              }).click(function(){
+                  alert("未実装です_ _");
+              });
+      {% endif %}
+      });
+  </script>
+{% endblock %}
+
+{% block content %}
+  {% ifequal alert_code 1 %}
+    <div class="alert alert-success" id="alert">{{ circle_data.circle_name }}を登録しました！</div>
+  {% endifequal %}
+  {% ifequal alert_code 2 %}
+    <div class="alert alert-danger" id="alert">{{ circle_data.day }}日目 {{ circle_data.circle_space }}はすでに登録されています</div>
+  {% endifequal %}
+
+  <h2>
+    {{ circle_data.circle_name }}
+    {% if user.is_authenticated %}
+      <div class="btn-group pull-right">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          お気に入りに追加 <span class="caret"></span>
+        </button>
+        <div class="dropdown-menu" role="menu">
+          <table>
+            <tr>
+              <td><div class="btn select-color" id="select-color-1"></div></td>
+              <td><div class="btn select-color" id="select-color-2"></div></td>
+              <td><div class="btn select-color" id="select-color-3"></div></td>
+            </tr> <tr>
+              <td><div class="btn select-color" id="select-color-4"></div></td>
+              <td><div class="btn select-color" id="select-color-5"></div></td>
+              <td><div class="btn select-color" id="select-color-6"></div></td>
+            </tr> <tr>
+              <td><div class="btn select-color" id="select-color-7"></div></td>
+              <td><div class="btn select-color" id="select-color-8"></div></td>
+              <td><div class="btn select-color" id="select-color-9"></div></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </h2>
+  <h4>{{ circle_data.pen_name }}</h4>
+  <h4>{{ circle_data.day }}日目 {{ circle_data.circle_space }}</h4>
+  <p class="lead">{{ circle_data.description }}</p>
+  <ul class="list-group">
+    {% if circle_data.wc_id %}
+      <a href="https://webcatalog.circle.ms/Circle/{{ circle_data.wc_id }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Webカタログ: https://webcatalog.circle.ms/Circle/{{ circle_data.wc_id }}</p></a>
+    {% else %}
+      <li class="list-group-item">Webカタログ:</li>
+    {% endif %}
+    {% if circle_data.url %}
+      <a href="{{ circle_data.url }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Webサイト: {{ circle_data.url }}</p></a>
+    {% else %}
+      <li class="list-group-item">Webサイト:</li>
+    {% endif %}
+    {% if circle_data.twitter_url %}
+      <a href="{{ circle_data.twitter_url }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Twitter: {{ circle_data.twitter_url }}</p></a>
+    {% else %}
+      <li class="list-group-item">Twitter:</li>
+    {% endif %}
+    {% if circle_data.pixiv_url %}
+      <a href="{{ circle_data.pixiv_url }}" target="_blank" class="list-group-item"><p class="list-group-item-text">Pixiv: {{ circle_data.pixiv_url }}</p></a>
+    {% else %}
+      <li class="list-group-item">Pixiv:</li>
+    {% endif %}
+  </ul>
+{% endblock %}

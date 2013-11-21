@@ -21,7 +21,6 @@
   var description = function() {/*{{ group.description|default:"説明文はありません" }}*/}.toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
 
   $(function() {
-      $("#description").text(description);
       $("#submit_request_join").click(function() {
           Dajaxice.ck.ajax_request_join(callback_request_join, {"form":$("#form_request_join").serialize(true)});
       });
@@ -41,7 +40,7 @@
       $("#description").dblclick(function() {
           if (description == "説明文はありません") description = "";
           $("#form_description").attr("rows", description.split("\n").length + 1);
-          $("#form_description").text(description);
+          $("#form_description").text(description.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
           $("#description").hide();
           $("#form_update_description").show();
       });
@@ -85,17 +84,6 @@
   </script>
 {% endblock %}
 
-{% block navbar-contents %}
-  <ul class="nav navbar-nav">
-    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
-    <li><a href={% url "ck.views.group" %}>グループ</a></li>
-    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
-  </ul>
-  <ul class="nav navbar-nav navbar-right">
-    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
-  </ul>
-{% endblock %}
-
 {% block content %}
   <h2>{{ group.name }}</h2>
 
@@ -103,7 +91,7 @@
     <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
   {% endifequal %}
 
-  <pre class="panel panel-default" id="description"></pre>
+  <pre class="panel panel-default" id="description">{{ group.description|default:"説明文はありません"|urlize }}</pre>
 
   <form class="form-horizontal" id="form_update_description" hidden>
     <div class="form-group">
@@ -181,7 +169,7 @@
         <div class="members_data">
           <strong>{{ member.first_name }}</strong><br>
           {{ member.username }}
-          {% ifequal member me %}<br><button class="btn btn-default btn-sm" id="submit_leave_group">グループから抜ける</button>{% endifequal %}
+          {% ifequal member user %}<br><button class="btn btn-default btn-sm" id="submit_leave_group">グループから抜ける</button>{% endifequal %}
         </div>
       </div>
     {% endfor %}

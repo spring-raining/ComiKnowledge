@@ -2,15 +2,20 @@
 
 {% block title %}{{ list.list_name }} | {% endblock %}
 
-{% block navbar-contents %}
-  <ul class="nav navbar-nav">
-    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
-    <li><a href={% url "ck.views.group" %}>グループ</a></li>
-    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
-  </ul>
-  <ul class="nav navbar-nav navbar-right">
-    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
-  </ul>
+{% block script %}
+  <script>
+  $(function() {
+      $(".submit_delete_listcircle").click(function() {
+          if (confirm($(this).attr("name")+"を削除しますか？")) {
+              Dajaxice.ck.ajax_delete_listcircle(callback_delete_listcircle, {"listcircle_id":$(this).val()});
+          }
+      });
+  });
+
+  function callback_delete_listcircle(data) {
+      $("tr[id="+data.id+"]").fadeOut("slow");
+  }
+  </script>
 {% endblock %}
 
 {% block content %}
@@ -19,21 +24,21 @@
   <table class="table table-bordered table-condensed table-hover">
     <thead>
       <tr>
-        <th width="30">曜日</th>
+        <th width="30"></th>
         <th width="100">スペース</th>
         <th width="250">サークル名</th>
         <th>メモ</th>
-        <!--<th width="40"></th>-->
       </tr>
     </thead>
     <tbody>
     {% for circle in circles %}
-      <tr>
+      <tr id="{{ circle.id }}">
         <td>{{ circle.week }}</td>
         <td>{{ circle.get_long_space }}</td>
-        <td>{{ circle.circle_name }}</td>
-        <td>{{ circle.memo }}</td>
-        <!--<td><a href="/checklist/{{ list.list_id }}?command=delete&id={{ circle.id }}">削除</a></td>-->
+        <td><a href="{% url "ck.views.search" %}?keyword={{ circle.circle_name|urlencode }}">{{ circle.circle_name }}</a></td>
+        <td>{{ circle.memo }}
+          <button class="btn btn-default btn-xs pull-right submit_delete_listcircle" value="{{ circle.id }}" name="{{ circle.circle_name }}">削除</button>
+        </td>
       </tr>
     {% endfor %}
     </tbody>

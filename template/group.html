@@ -13,6 +13,7 @@
 {% block script %}
   <script>
   $(function() {
+      $("#navbar-group").addClass("active");
       $("#submit_create_group").click(function() {
           Dajaxice.ck.ajax_create_group(callback_create_group, {"form":$("#form_create_group").serialize(true)});
       });
@@ -52,17 +53,6 @@
       $("#groups").append('<tr><td width="200">'+data.group_id+'</td><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
   }
   </script>
-{% endblock %}
-
-{% block navbar-contents %}
-  <ul class="nav navbar-nav">
-    <li><a href={% url "ck.views.home" %}>ホーム</a></li>
-    <li class="active"><a href={% url "ck.views.group" %}>グループ</a></li>
-    <li><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>
-  </ul>
-  <ul class="nav navbar-nav navbar-right">
-    <li><a href={% url "ck.views.logout" %}>ログアウト</a></li>
-  </ul>
 {% endblock %}
 
 {% block content %}
