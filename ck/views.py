@@ -155,7 +155,7 @@ def group(request):
         else:
             invited_groups.append(i)
     response["groups"] = groups
-    response["inviged_groups"] = invited_groups
+    response["invited_groups"] = invited_groups
     response["alert_code"] = alert_code
     ctx = RequestContext(request, response)
     return render_to_response("group.html", ctx)

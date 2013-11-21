@@ -21,7 +21,6 @@
   var description = function() {/*{{ group.description|default:"説明文はありません" }}*/}.toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
 
   $(function() {
-      $("#description").text(description);
       $("#submit_request_join").click(function() {
           Dajaxice.ck.ajax_request_join(callback_request_join, {"form":$("#form_request_join").serialize(true)});
       });
@@ -41,7 +40,7 @@
       $("#description").dblclick(function() {
           if (description == "説明文はありません") description = "";
           $("#form_description").attr("rows", description.split("\n").length + 1);
-          $("#form_description").text(description);
+          $("#form_description").text(description.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
           $("#description").hide();
           $("#form_update_description").show();
       });
@@ -92,7 +91,7 @@
     <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
   {% endifequal %}
 
-  <pre class="panel panel-default" id="description"></pre>
+  <pre class="panel panel-default" id="description">{{ group.description|default:"説明文はありません"|urlize }}</pre>
 
   <form class="form-horizontal" id="form_update_description" hidden>
     <div class="form-group">
