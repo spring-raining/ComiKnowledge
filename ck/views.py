@@ -5,12 +5,12 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 from django.core.paginator import Paginator
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404, QueryDict
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from social_auth.db.django_models import UserSocialAuth
-from dajaxice.decorators import dajaxice_register
 import urllib
 
 from ComiKnowledge import settings
@@ -19,7 +19,7 @@ from ck.forms import *
 import src
 from src.api.twitter import *
 from src.data.list import *
-from src.data.group import *
+from src.utils import *
 
 
 def index(request):
@@ -63,7 +63,7 @@ def checklist(request):
         else:
             csv_file = request.FILES["csv"]
             try:
-                l = import_list(csv_file ,request.user)
+                l = import_list(csv_file, request.user)
                 response["list_name"] = l.list_name
                 alert_code = 1
             except ChecklistInvalidError:
@@ -269,8 +269,8 @@ def search(request):
         keywords.append("")
     for k in keywords:
         query = query.filter(
-            Q(circleknowledgedata__circle_name__icontains=k)|
-            Q(circleknowledgedata__pen_name__icontains=k)|
+            Q(circleknowledgedata__circle_name__icontains=k) |
+            Q(circleknowledgedata__pen_name__icontains=k) |
             Q(circleknowledgedata__description__icontains=k))
     circles = []
     for q in query:
@@ -289,9 +289,9 @@ def search(request):
     pages = [page]
     while len(pages) < 5 and len(pages) < p_circles.num_pages:
         if pages[0] != 1:
-            pages.insert(0, pages[0]-1)
+            pages.insert(0, pages[0] - 1)
         if pages[-1] != p_circles.num_pages:
-            pages.append(pages[-1]+1)
+            pages.append(pages[-1] + 1)
     response["p_circles"] = p_circles
     response["circles"] = p_circles.page(page)
     response["pages"] = pages
@@ -310,12 +310,26 @@ def circle(request, circle_id, **redirect_response):
         _q = ck.circleknowledgedata_set.all()
         ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
 
+    comments = {}
+    for i in range(80, src.COMIKET_NUMBER+1):
+        _ckc = ck.circleknowledgecomment_set.filter(comiket_number=i)
+        comments[i] = sorted(_ckc, key=lambda x:
+            x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
     response = _base_response(request)
     if redirect_response:
         response.update(redirect_response)
+    if request.GET.has_key("alert_code"):
+        try:
+            response["alert_code"] = int(request.GET["alert_code"])
+            request.GET = QueryDict({})
+            request.META["QUERY_STRING"] = ""
+        except ValueError:
+            response["alert_code"] = ""
     response["circle_knowledge"] = ck
     response["circles"] = ck.circleknowledgedata_set.all()
     response["circle_data"] = ckd
+    response["comments"] = comments
+    response["space_character"] = space_character(ckd.comiket_number, ckd.day, ckd.block_id, ckd.space_number)
     ctx = RequestContext(request, response)
     return render_to_response("circle.html", ctx)
 

@@ -37,6 +37,9 @@ class ChecklistVersionError(Exception):
     def __str__(self):
         return 'Version "' + self.version + '" cannot be read now'
 
+class TooMuchCommentsError(Exception):
+    def __str__(self):
+        return "Comments are too much"
 
 if __name__ == "__main__":
     # なにも書かないで
