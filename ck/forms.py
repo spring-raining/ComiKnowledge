@@ -7,9 +7,10 @@ from ck.models import CircleKnowledgeData, CircleKnowledge
 import src
 from src.utils import generate_rand_str
 
-re_twitter = re.compile('^https?://(www\.)?twitter.com/\w+$')
+re_twitter = re.compile('^https?://(www\.)?twitter\.com/\w+$')
 re_pixiv = re.compile('^http://(www\.)?pixiv\.net/member\.php\?id=\d+$')
 re_url = re.compile('^https?://')
+re_wc = re.compile('^https?://webcatalog\.circle\.ms/Circle/(\d+)$')
 class CircleRegisterForm(forms.ModelForm):
     block_choices = [("", "---------")]
     for k, v in src.BLOCK_ID.items():
@@ -19,13 +20,14 @@ class CircleRegisterForm(forms.ModelForm):
     pen_name = forms.CharField(max_length=100, required=False)
     url = forms.URLField(max_length=4000, required=False)
     description = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), max_length=4000, required=False)
+    wc_id = forms.CharField(max_length=256, required=False)
     twitter_url = forms.CharField(max_length=256, required=False)
     pixiv_url = forms.CharField(max_length=256, required=False)
 
     class Meta:
         model = CircleKnowledgeData
         fields = ("day", "block_id", "space_number", "space_number_sub", "circle_name", "pen_name", "url",
-                  "description", "twitter_url", "pixiv_url")
+                  "description", "wc_id", "twitter_url", "pixiv_url")
 
     def clean_space_number(self):
         try:
@@ -44,6 +46,15 @@ class CircleRegisterForm(forms.ModelForm):
             raise forms.ValidationError("Invalid URL")
         return self.cleaned_data["url"]
 
+    def clean_wc_id(self):
+        if self.cleaned_data["wc_id"] and not re_wc.match(self.cleaned_data["wc_id"]):
+            raise forms.ValidationError("Invalid WebCatalog URL")
+        if self.cleaned_data["wc_id"]:
+            wc_match = re_wc.match(self.cleaned_data["wc_id"])
+            return wc_match.group(1)
+        else:
+            return None
+
     def clean_twitter_url(self):
         if self.cleaned_data["twitter_url"] and not re_twitter.match(self.cleaned_data["twitter_url"]):
             raise forms.ValidationError("Invalid Twitter URL")
@@ -53,3 +64,7 @@ class CircleRegisterForm(forms.ModelForm):
         if self.cleaned_data["pixiv_url"] and not re_pixiv.match(self.cleaned_data["pixiv_url"]):
             raise forms.ValidationError("Invalid Pixiv URL")
         return self.cleaned_data["pixiv_url"]
+
+
+class CircleEditForm(CircleRegisterForm):
+    pass
