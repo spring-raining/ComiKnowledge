@@ -435,6 +435,9 @@
   {% ifequal alert_code 4 %}
     <div class="alert alert-success" id="alert">タイムチャートのコメントを削除しました</div>
   {% endifequal %}
+  {% ifequal alert_code 5 %}
+    <div class="alert alert-success" id="alert">{{ circle_data.circle_name }}を編集しました！</div>
+  {% endifequal %}
   {% if not alert_code %}
     <div class="alert" id="alert" hidden></div>
   {% endif %}
@@ -443,9 +446,9 @@
     {{ circle_data.circle_name }}
     {% if user.is_authenticated %}
       <div class="btn-group pull-right">
-        <button type="button" class="btn btn-primary">
+        <a href="{% url "ck.views.circle_edit" circle_knowledge.circle_knowledge_id %}" class="btn btn-primary">
           情報を編集
-        </button>
+        </a>
       </div>
     {% endif %}
   </h2>

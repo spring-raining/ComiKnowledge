@@ -359,6 +359,41 @@ def circle_register(request):
     return render_to_response("circle_register.html", ctx)
 
 
+@login_required
+def circle_edit(request, circle_id):
+    response = _base_response(request)
+    alert_code = 0
+    try:
+        ck = CircleKnowledge.objects.get(circle_knowledge_id=circle_id)
+        ckd = ck.circleknowledgedata_set.filter(comiket_number=src.COMIKET_NUMBER)[0]
+    except:                                                             # circle_idがおかしい
+        raise Http404
+    if request.method == "POST":
+        form = CircleEditForm(request.POST, instance=ckd)
+        if not form.is_valid():
+            alert_code = 2
+            response["invalid"] = form.errors
+        else:
+            _ckd = CircleKnowledgeData.objects.filter(comiket_number=src.COMIKET_NUMBER,
+                                                       day=int(request.POST["day"]),
+                                                       block_id=int(request.POST["block_id"]),
+                                                       space_number=int(request.POST["space_number"]),
+                                                       space_number_sub=request.POST["space_number_sub"])
+            if len(_ckd) >=1 and _ckd[0].parent_circle_knowledge != ck: # すでに同じ位置に別のサークルが登録されている
+                return circle(request, _ckd[0].parent_circle_knowledge.circle_knowledge_id, alert_code=2)
+            form.save()
+            return circle(request, circle_id, alert_code=5)
+    else:
+        if ckd.wc_id:
+            form = CircleEditForm(instance=ckd, initial={"wc_id": "https://webcatalog.circle.ms/Circle/" + str(ckd.wc_id)})
+        else:
+            form = CircleEditForm(instance=ckd)
+    response["form"] = form
+    response["alert_code"] = alert_code
+    response["circle_id"] = circle_id
+    ctx = RequestContext(request, response)
+    return render_to_response("circle_edit.html", ctx)
+
 def login(request):
     response = _base_response(request)
     if request.user.is_authenticated():
