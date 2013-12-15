@@ -69,6 +69,13 @@ def ajax_verify_join(request, group_id):
     return json.dumps({"group_name": g.name, "group_id": g.group_id})
 
 
+@dajaxice_register
+def ajax_reject_join(request, group_id):
+    g = CKGroup.objects.get(group_id=group_id)
+    leave_group(g, request.user)
+    return json.dumps({"group_name": g.name, "group_id": g.group_id})
+
+
 # 未実装
 @dajaxice_register
 def ajax_import_list(request, form):

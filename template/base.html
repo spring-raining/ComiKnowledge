@@ -29,11 +29,74 @@
       background-color: #41435A;
   }
 
+  .navbar .navbar-nav > li > a {
+      color: #ACAFC7;
+  }
+
+  .navbar .navbar-nav > .active > a,
+  .navbar .navbar-nav > .active > a:hover,
+  .navbar .navbar-nav > .active > a:focus {
+      background-color: #25283F;
+  }
+
+  .navbar-form .form-control {
+      border-width: 0;
+  }
+
+  @media (min-width: 768px) {
+      #navbar-line {
+          height: 16px;
+          background: -moz-linear-gradient(left, #41435a 50%, #25283F 100%);
+          background: -webkit-linear-gradient(left, #41435A 50%, #25283F 100%);
+          background: linear-gradient(to right, #41435A 50%, #25283F 100%);
+      }
+
+      .navbar-form {
+          margin: 0;
+          padding: 2px 0;
+      }
+
+      .navbar-nav > li > a {
+          padding: 7px 15px;
+      }
+  }
+
+  @media (max-width: 767px) {
+      .navbar-form {
+          border-width: 0;
+          -webkit-box-shadow: none;
+                  box-shadow: none;
+      }
+  }
+
   #brand {
       background: url({{ STATIC_URL }}png/top_346_100.png) no-repeat left center;
       background-size: 173px 50px;
       width: 173px;
       height: 50px;
+  }
+
+  footer {
+      padding-top: 10px;
+      background-color: #25283F;
+      -webkit-box-shadow: 0 -5px 25px rgba(65, 67, 90, 0.5);
+              box-shadow: 0 -5px 25px rgba(65, 67, 90, 0.5);
+  }
+
+  .footer-left {
+      display: inline-block;
+      margin-left: 40px;
+  }
+
+  .footer-right {
+      float: right !important;
+      text-align: right;
+      display: inline-block;
+      margin-right: 15px;
+  }
+
+  .twitter-share-button {
+      width: 100px !important;
   }
 </style>
 {% block style %}{% endblock %}
@@ -60,14 +123,15 @@
       </button>
       <a href="/" class="navbar-brand" id="brand"></a>
     </div>
+    <div id="navbar-line"></div>
     <div class="navbar-collapse collapse navbar-target">
     {% block navbar-contents %}
       <div class="col-sm-3">
         <form class="navbar-form" action="{% url "ck.views.search" %}" role="search" method="post">{% csrf_token %}
           <div class="input-group">
-            <input type="text" class="form-control" name="keyword" placeholder="検索">
+            <input type="text" class="form-control input-sm" name="keyword" placeholder="検索">
             <div class="input-group-btn">
-              <button type="submit" class="btn btn-inverse"><span class="glyphicon glyphicon-search"></span></button>
+              <button type="submit" class="btn btn-sm btn-inverse"><span class="glyphicon glyphicon-search"></span></button>
             </div>
           </div>
         </form>
@@ -99,11 +163,17 @@
   </div>
 
   <footer>
-    <div class="container">
-      <p class="text-muted text-center">
-          {{ version }}<br>
-        © 2013 <a href="https://twitter.com/intent/tweet?screen_name=spring_raining" data-lang="ja" data-related="spring_raining">spring_raining</a>
-      </p>
+    <div class="text-muted footer-left">
+        {{ version }}<br>
+      © 2013 <a href="https://twitter.com/spring_raining">spring_raining</a>
+    </div>
+    <div class="footer-right">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://comiknowledge.harusamex.com" data-lang="ja">ツイート</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+      <div class="fb-like" data-href="http://comiknowledge.harusamex.com" data-layout="button_count" data-action="like" data-show-faces="true" data-share="false"></div>
+      <script>(function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(d.getElementById(id))return;js=d.createElement(s);js.id=id;js.src="//connect.facebook.net/ja_JP/all.js#xfbml=1";fjs.parentNode.insertBefore(js,fjs);}(document,'script','facebook-jssdk'));</script>
+      <br>
+      <a href="http://b.hatena.ne.jp/entry/comiknowledge.harusamex.com" class="hatena-bookmark-button" data-hatena-bookmark-title="ComiKnowledge" data-hatena-bookmark-layout="standard-balloon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
     </div>
   </footer>
 </body>

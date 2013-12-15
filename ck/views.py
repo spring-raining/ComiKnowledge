@@ -47,6 +47,12 @@ def home(request):
         usa = UserSocialAuth.objects.get(user_id=request.user.id)
         save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
 
+    # recentクエリ
+    _recent_ckc = CircleKnowledgeComment.objects.all().order_by("-write_at")[:5]
+    recent_ckc = {_recent_ckc[i]:
+                      _recent_ckc[i].parent_circle_knowledge.circleknowledgedata_set.get(comiket_number=src.COMIKET_NUMBER)
+                  for i in range(len(_recent_ckc))}
+    response["recent_comments"] = recent_ckc
     ctx = RequestContext(request, response)
     return render_to_response("home.html", ctx)
 
