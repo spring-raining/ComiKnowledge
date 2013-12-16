@@ -103,7 +103,7 @@ class ListCircle(models.Model):
         if not self.area or not self.block or not self.space_number or not self.space_number_sub:
             return None
         else:
-            return "%s%s-%d%s" % (self.area, self.block, self.space_number, self.space_number_sub)
+            return "%s%s%d%s" % (self.area, self.block, self.space_number, self.space_number_sub)
 
 #
 # CSVリストで記録されている未登録サークルのモデル
@@ -207,9 +207,13 @@ class AbstractKnowledgeComment(models.Model):
     comiket_number = models.PositiveSmallIntegerField()
     comment = models.CharField(max_length=50, null=True)
     event_code = models.PositiveSmallIntegerField()
-    event_time = models.TimeField(null=True)
-    start_time = models.TimeField(null=True)
-    end_time = models.TimeField(null=True)
+    event_time_hour = models.PositiveSmallIntegerField(null=True)
+    event_time_min = models.PositiveSmallIntegerField(null=True)
+    start_time_hour = models.PositiveSmallIntegerField(null=True)
+    start_time_min = models.PositiveSmallIntegerField(null=True)
+    finish_time_hour = models.PositiveSmallIntegerField(null=True)
+    finish_time_min = models.PositiveSmallIntegerField(null=True)
+    onymous = models.BooleanField()
 
     class Meta:
         abstract = True

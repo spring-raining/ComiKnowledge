@@ -43,3 +43,51 @@ def convert_to_hankaku(text):
         else:
             converted += c
     return converted
+
+def space_character(comiket_number, day, block_id, space_number):
+    """
+    スペースに応じてその特徴を表す名前を返す
+    >>> print space_character(85, 3, 1, 4)
+    シャッター
+    >>> print space_character(85, 2, 116, 34)
+    シャッター
+    >>> print space_character(85, 1, 14, 36)
+    偽壁(お誕生日席)
+    >>> print space_character(85, 3, 36, 31)
+    内壁(お誕生日席)
+    """
+    if comiket_number == 85:
+        if block_id in (1, 38,):
+            if space_number in (4, 5, 6, 15, 16, 17, 28, 29, 44, 45, 60, 61, 72, 73, 74, 83, 84, 85,):
+                return u"シャッター"
+            elif space_number in (20, 21, 36, 37, 52, 53, 68, 69,):
+                return u"外壁(非常口)"
+            else:
+                return u"外壁"
+        elif block_id in (75, 116,):
+            if space_number in (19, 20, 34, 35,):
+                return u"シャッター"
+            else:
+                return u"西館壁"
+        elif block_id in (13, 14, 25, 26, 50, 51, 62, 63,):
+            if space_number in (1, 5, 6, 12, 13, 19, 20, 24, 25, 29, 30, 36, 37, 43, 44, 48,):
+                return u"偽壁(お誕生日席)"
+            else:
+                return u"偽壁"
+        else:
+            text = ""
+            if (day == 2 and block_id == 40 and space_number <= 30)\
+            or (day == 3 and block_id == 3 and space_number <= 30)\
+            or (day == 3 and block_id == 36 and space_number >= 31)\
+            or (day == 3 and block_id == 40 and space_number <= 30):
+                text = u"内壁"
+            if block_id in (2, 37, 39, 74,)                                         and space_number in (1, 7, 8, 13, 14, 19, 20, 26, 27, 33, 34, 39, 40, 45, 46, 52,)\
+            or block_id <= 74                                                       and space_number in (1, 7, 8, 15, 16, 23, 24, 30, 31, 37, 38, 45, 46, 53, 54, 60,)\
+            or block_id in (76, 81, 110, 115,)                                      and space_number in (1, 7, 8, 16, 17, 25,)\
+            or block_id in (77, 78, 79, 80, 111, 112, 113, 114,)                    and space_number in (1, 8, 9, 17, 18, 26,)\
+            or block_id in (82, 83, 84, 85, 86, 87, 104, 105, 106, 107, 108, 109,)  and space_number in (1, 9, 10, 18, 19, 24,)\
+            or block_id in (88, 89, 102, 103,)                                      and space_number in (1, 6, 7, 11,)\
+            or block_id in (90, 91, 92, 93, 94, 97, 98, 99, 100, 101,)              and space_number in (1, 7, 8, 13)\
+            or block_id in (95, 96,)                                                and space_number in (1, 7, 8, 12,):
+                text += u"お誕生日席" if text == "" else u"(お誕生日席)"
+            return text

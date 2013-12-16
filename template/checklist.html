@@ -12,28 +12,10 @@
               Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
           }
       });
-      $("#submit_create_list").click(function() {
-          Dajaxice.ck.ajax_create_list(callback_create_list, {"form": $("#form_create_list").serialize(true)});
-      });
   });
 
   function callback_delete_list(data) {
       $("tr[id="+data.list_id+"]").fadeOut("slow");
-  }
-  function callback_create_list(data) {
-      $("#alert_create_list").removeClass("alert-success alert-danger").hide();
-      $(".form-group").removeClass("has-error");
-      if (data.alert_code == "1") {
-          $("#alert_create_list").addClass("alert-success").text(data.list_name + "を作成しました！").show();
-          $("#lists").append('<tr><td></td><td><a href="/checklist/'+data.list_id+'/">'+data.list_name+'</a></td><td width="50"><a href="/checklist/'+data.list_id+'/download" class="btn btn-default btn-sm">保存</a></td><td width="50"><button class="btn btn-default btn-sm submit_delete_list" value="'+data.list_id+'" name="'+data.list_name+'">削除</button></td></tr>');
-      }
-      else if (data.alert_code == "2") {
-          $("#alert_create_list").addClass("alert-danger").text("名前を入力してください").show();
-          $("#form_list_name").parents(".form-group").addClass("has-error");
-      }
-      else if (data.alert_code == "3") {
-          $("#alert_create_list").addCalendar("alert-danger").text("チェックリストを作成できませんでした").show();
-      }
   }
   </script>
 {% endblock %}
@@ -50,65 +32,39 @@
   {% ifequal alert_code 3 %}
     <div class="alert alert-danger" id="alert">リストの読み込みに失敗しました</div>
   {% endifequal %}
+  {% ifequal alert_code 4 %}
+    <div class="alert alert-danger" id="alert">リストの読み込みができませんでした<br>読み込むリストはC85用に作成されたリストを選択してください</div>
+  {% endifequal %}
 
   <div class="panel-group" id="accordion">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse_body_1">
-          新規作成
-        </a>
-      </h4>
-    </div>
-    <div id="collapse_body_1" class="panel-collapse collapse">
-      <div class="panel-body">
-        <div class="col-sm-offset-1 col-sm-10">
-          <div class="alert" id="alert_create_list" hidden></div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse_body_2">
+            CSVチェックリストを読み込む
+          </a>
+        </h4>
+      </div>
+      <div id="collapse_body_2" class="panel-collapse collapse">
+        <div class="panel-body">
+          <form class="form-horizontal" method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
+            <label  class="col-sm-offset-1 col-sm-10" for="form_csv">読み込むCSVファイルを選択</label>
+            <div class="col-sm-offset-1 col-sm-8 col-xs-10">
+              <input type="file" name="csv" id="form_csv">
+            </div>
+            <div class="col-xs-2">
+              <input type="submit" class="btn btn-primary pull-right" id="submit" value="読み込み">
+            </div>
+          </form>
         </div>
-
-        <form class="form-horizontal" method="post" id="form_create_list">{% csrf_token %}
-          <div class="form-group">
-            <label  class="col-sm-offset-1 col-sm-10" for="form_list_name">チェックリストの名前</label>
-            <div class="col-sm-offset-1 col-sm-9 col-xs-10">
-              <input class="form-control" type="text" name="list_name" id="form_list_name" maxlength="30">
-            </div>
-            <div class="col-sm-1 col-xs-2">
-              <button type="button" class="btn btn-primary pull-right" id="submit_create_list">作成</button>
-            </div>
-          </div>
-        </form>
       </div>
     </div>
-  </div>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse_body_2">
-          CSVチェックリストを読み込む
-        </a>
-      </h4>
-    </div>
-    <div id="collapse_body_2" class="panel-collapse collapse">
-      <div class="panel-body">
-        <form class="form-horizontal" method="post" enctype="multipart/form-data" id="form">{% csrf_token %}
-          <label  class="col-sm-offset-1 col-sm-10" for="form_csv">読み込むCSVファイルを選択</label>
-          <div class="col-sm-offset-1 col-sm-8 col-xs-10">
-            <input type="file" name="csv" id="form_csv">
-          </div>
-          <div class="col-xs-2">
-            <input type="submit" class="btn btn-primary pull-right" id="submit" value="読み込み">
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
   </div>
 
   <h3>チェックリスト一覧</h3>
   <table class="table" id="lists">
     {% for list in lists %}
       <tr id="{{ list.list_id }}">
-        <td>{{ list.list_id }}</td>
         <td><a href="/checklist/{{ list.list_id }}/">{{ list.list_name }}</a></td>
         <td width="50"><a href="/checklist/{{ list.list_id }}/download" class="btn btn-default btn-sm">保存</a></td>
         <td width="50"><button class="btn btn-default btn-sm submit_delete_list" value="{{ list.list_id }}" name="{{ list.list_name }}">削除</button></td>

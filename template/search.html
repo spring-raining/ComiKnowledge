@@ -8,13 +8,11 @@
   {% if not circles %}
     <div class="alert alert-warning">
       <p>見つかりませんでした。<a href="{% url "ck.views.circle_register" %}" class="alert-link">サークルを登録する</a></p>
-      <p><a href="" class="alert-link" onclick='alert("未実装です_ _");'>コミケWebカタログにログイン</a>すると全てのサークルから検索できます。</p>
     </div>
   {% else %}
     <div class="alert alert-success">
       <p>{{ p_circles.count }}件のサークルが見つかりました<br>
       　→見つかりませんでしたか？　<a href="{% url "ck.views.circle_register" %}" class="alert-link">サークルを登録する</a></p>
-      <p><a href="" class="alert-link" onclick='alert("未実装です_ _");'>コミケWebカタログにログイン</a>すると全てのサークルから検索できます。</p>
     </div>
 
     <center>

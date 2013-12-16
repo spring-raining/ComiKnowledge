@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}サークルを登録 | {% endblock %}
+{% block title %}サークル情報を編集 | {% endblock %}
 
 {% block script %}
   <script>
@@ -15,17 +15,20 @@
           {% if form.wc_id.errors %}$("#id_wc_id").parents(".form-group").addClass("has-error");{% endif %}
           {% if form.twitter_url.errors %}$("#id_twitter_url").parents(".form-group").addClass("has-error");{% endif %}
           {% if form.pixiv_url.errors %}$("#id_pixiv_url").parents(".form-group").addClass("has-error");{% endif %}
+
+          $("[data-toggle=tooltip]").tooltip();
+
       });
   </script>
 {% endblock %}
 
 {% block content %}
 
-  <h3>サークルを登録</h3>
+  <h3>サークル情報を編集</h3>
   {% ifequal alert_code 2 %}
     <div class="alert alert-danger" id="alert">入力された値を確認してください</div>
   {% endifequal %}
-  <form class="form-horizontal" action="{% url "ck.views.circle_register"%}" method="post">{% csrf_token %}
+  <form class="form-horizontal" action="{% url "ck.views.circle_edit" circle_id %}" method="post">{% csrf_token %}
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">サークルの情報</h3>
@@ -69,7 +72,9 @@
       </div>
     </div>
     <div class="col-sm-offset-1 col-sm-10">
-      <button type="submit" class="btn btn-primary pull-right">登録</button>
+      <div class="pull-right">
+        <button type="submit" class="btn btn-primary">登録</button>
+      </div>
     </div>
   </form>
 {% endblock %}

@@ -20,6 +20,9 @@
       $(".submit_verify_join").click(function() {
           Dajaxice.ck.ajax_verify_join(callback_verify_join, {"group_id": $(this).attr("value")});
       });
+      $(".submit_reject_join").click(function() {
+          Dajaxice.ck.ajax_reject_join(callback_reject_join, {"group_id": $(this).attr("value")});
+      });
   });
 
   function callback_create_group(data) {
@@ -51,6 +54,11 @@
       $("#alert_verify_join").text(data.group_name + "に参加しました！").show();
       $("tr[title='"+data.group_id+"']").remove();
       $("#groups").append('<tr><td width="200">'+data.group_id+'</td><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+  }
+
+  function callback_reject_join(data) {
+      $("#alert_verify_join").text(data.group_name + "の招待を却下しました").show();
+      $("tr[title='"+data.group_id+"']").remove();
   }
   </script>
 {% endblock %}
@@ -89,7 +97,6 @@
           <div class="form-group">
             <div class="col-sm-offset-4 col-sm-7">
               <button type="button" class="btn btn-primary" id="submit_create_group">作成</button>
-              <!--<input class="btn btn-primary" type="submit" id="submit" value="作成">-->
             </div>
           </div>
         </form>
@@ -99,15 +106,22 @@
 
   </div>
   <div class="alert alert-success" id="alert_verify_join" hidden></div>
+  <div class="alert alert-success" id="alert_reject_join" hidden></div>
 
   {% if invited_groups %}
     <h3>招待されているグループ</h3>
     <table class="table" id="invited_groups">
     {% for group in invited_groups %}
       <tr title="{{ group.group_id }}">
-        <td width="200">{{ group.group_id }}</td>
         <td>{{ group.name }}
-          <button class="btn btn-sm btn-primary pull-right submit_verify_join" value="{{ group.group_id }}">参加</button>
+          <div class="pull-right">
+            <button class="btn btn-sm btn-primary submit_verify_join" value="{{ group.group_id }}">
+              <span class="glyphicon glyphicon-ok"></span>
+            </button>
+            <button class="btn btn-sm btn-danger submit_reject_join" value="{{ group.group_id }}">
+              <span class="glyphicon glyphicon-remove"></span>
+            </button>
+          </div>
         </td>
       </tr>
     {% endfor %}
@@ -117,7 +131,6 @@
   <table class="table" id="groups">
   {% for group in groups %}
     <tr title="{{ group.group_id }}">
-      <td width="200">{{ group.group_id }}</td>
       <td><a href="{% url "ck.views.group_home" group.group_id %}">{{ group.name }}</a></td>
     </tr>
   {% endfor %}

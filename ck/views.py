@@ -5,12 +5,12 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 from django.core.paginator import Paginator
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModified, Http404, QueryDict
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from social_auth.db.django_models import UserSocialAuth
-from dajaxice.decorators import dajaxice_register
 import urllib
 
 from ComiKnowledge import settings
@@ -19,7 +19,7 @@ from ck.forms import *
 import src
 from src.api.twitter import *
 from src.data.list import *
-from src.data.group import *
+from src.utils import *
 
 
 def index(request):
@@ -47,6 +47,12 @@ def home(request):
         usa = UserSocialAuth.objects.get(user_id=request.user.id)
         save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
 
+    # recentクエリ
+    _recent_ckc = CircleKnowledgeComment.objects.all().order_by("-write_at")[:5]
+    recent_ckc = {_recent_ckc[i]:
+                      _recent_ckc[i].parent_circle_knowledge.circleknowledgedata_set.get(comiket_number=src.COMIKET_NUMBER)
+                  for i in range(len(_recent_ckc))}
+    response["recent_comments"] = recent_ckc
     ctx = RequestContext(request, response)
     return render_to_response("home.html", ctx)
 
@@ -63,11 +69,13 @@ def checklist(request):
         else:
             csv_file = request.FILES["csv"]
             try:
-                l = import_list(csv_file ,request.user)
+                l = import_list(csv_file, request.user)
                 response["list_name"] = l.list_name
                 alert_code = 1
             except ChecklistInvalidError:
                 alert_code = 3
+            except ChecklistVersionError:
+                alert_code = 4
 
     response["alert_code"] = alert_code
     response["lists"] = request.user.list_set.all()
@@ -137,7 +145,7 @@ def checklist_edit(request, list_id):
 
     response = _base_response(request)
     response["list"] = l
-    response["circles"] = l.listcircle_set.all()
+    response["circles"] = l.listcircle_set.all().order_by("page_number")
     ctx = RequestContext(request, response)
     return render_to_response("checklist_edit.html", ctx)
 
@@ -162,7 +170,7 @@ def group(request):
 
 
 @login_required
-def group_home(request, group_id, **redirect_response):
+def group_home(request, group_id):
     if group_id is None:
         raise Http404
     try:
@@ -178,8 +186,11 @@ def group_home(request, group_id, **redirect_response):
     members = []
     inviting_members = []
     response = _base_response(request)
-    if redirect_response:
-        response.update(redirect_response)
+    if "alert_code" in request.session:
+        response["alert_code"] = request.session["alert_code"]
+        response["list_name"] = request.session["list_name"]
+        del request.session["alert_code"]
+        del request.session["list_name"]
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
         if r.verification:
@@ -233,7 +244,9 @@ def group_checklist_create(request, group_id):
                 l.append(List.objects.get(id=i))
             try:
                 merge_list(l, g, request.POST["list_name"])
-                return group_home(request, group_id, alert_code=1, list_name=request.POST["list_name"])
+                request.session["alert_code"] = 1
+                request.session["list_name"] = request.POST["list_name"]
+                return HttpResponseRedirect("/group/" + group_id)
             except:
                 alert_code = 4
 
@@ -269,8 +282,8 @@ def search(request):
         keywords.append("")
     for k in keywords:
         query = query.filter(
-            Q(circleknowledgedata__circle_name__icontains=k)|
-            Q(circleknowledgedata__pen_name__icontains=k)|
+            Q(circleknowledgedata__circle_name__icontains=k) |
+            Q(circleknowledgedata__pen_name__icontains=k) |
             Q(circleknowledgedata__description__icontains=k))
     circles = []
     for q in query:
@@ -289,9 +302,9 @@ def search(request):
     pages = [page]
     while len(pages) < 5 and len(pages) < p_circles.num_pages:
         if pages[0] != 1:
-            pages.insert(0, pages[0]-1)
+            pages.insert(0, pages[0] - 1)
         if pages[-1] != p_circles.num_pages:
-            pages.append(pages[-1]+1)
+            pages.append(pages[-1] + 1)
     response["p_circles"] = p_circles
     response["circles"] = p_circles.page(page)
     response["pages"] = pages
@@ -310,12 +323,30 @@ def circle(request, circle_id, **redirect_response):
         _q = ck.circleknowledgedata_set.all()
         ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
 
+    comments = {}
+    for i in range(80, src.COMIKET_NUMBER+1):
+        _ckc = ck.circleknowledgecomment_set.filter(comiket_number=i)
+        comments[i] = sorted(_ckc, key=lambda x:
+            x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
     response = _base_response(request)
+    if "alert_code" in request.session:
+        print request.session["alert_code"]
+        response["alert_code"] = request.session["alert_code"]
+        del request.session["alert_code"]
     if redirect_response:
         response.update(redirect_response)
+    if request.GET.has_key("alert_code"):
+        try:
+            response["alert_code"] = int(request.GET["alert_code"])
+            request.GET = QueryDict({})
+            request.META["QUERY_STRING"] = ""
+        except ValueError:
+            response["alert_code"] = ""
     response["circle_knowledge"] = ck
     response["circles"] = ck.circleknowledgedata_set.all()
     response["circle_data"] = ckd
+    response["comments"] = comments
+    response["space_character"] = space_character(ckd.comiket_number, ckd.day, ckd.block_id, ckd.space_number)
     ctx = RequestContext(request, response)
     return render_to_response("circle.html", ctx)
 
@@ -333,10 +364,12 @@ def circle_register(request):
             ckd = form.save(commit=False)
             ckd_val = ckd.validate_circle()
             if isinstance(ckd_val, CircleKnowledge):
-                return circle(request, ckd_val.circle_knowledge_id, alert_code=2)
+                request.session["alert_code"] = 2
+                return HttpResponseRedirect("/circle/" + ckd_val.circle_knowledge_id)
             elif ckd_val is True:
                 ckd.save()
-                return circle(request, ckd.parent_circle_knowledge.circle_knowledge_id, alert_code=1)
+                request.session["alert_code"] = 1
+                return HttpResponseRedirect("/circle/" + ckd.parent_circle_knowledge.circle_knowledge_id)
     else:
         form = CircleRegisterForm()
     response["form"] = form
@@ -344,6 +377,43 @@ def circle_register(request):
     ctx = RequestContext(request, response)
     return render_to_response("circle_register.html", ctx)
 
+
+@login_required
+def circle_edit(request, circle_id):
+    response = _base_response(request)
+    alert_code = 0
+    try:
+        ck = CircleKnowledge.objects.get(circle_knowledge_id=circle_id)
+        ckd = ck.circleknowledgedata_set.filter(comiket_number=src.COMIKET_NUMBER)[0]
+    except:                                                             # circle_idがおかしい
+        raise Http404
+    if request.method == "POST":
+        form = CircleEditForm(request.POST, instance=ckd)
+        if not form.is_valid():
+            alert_code = 2
+            response["invalid"] = form.errors
+        else:
+            _ckd = CircleKnowledgeData.objects.filter(comiket_number=src.COMIKET_NUMBER,
+                                                       day=int(request.POST["day"]),
+                                                       block_id=int(request.POST["block_id"]),
+                                                       space_number=int(request.POST["space_number"]),
+                                                       space_number_sub=request.POST["space_number_sub"])
+            if len(_ckd) >=1 and _ckd[0].parent_circle_knowledge != ck: # すでに同じ位置に別のサークルが登録されている
+                request.session["alert_code"] = 2
+                return HttpResponseRedirect("/circle/" + _ckd[0].parent_circle_knowledge.circle_knowledge_id)
+            form.save()
+            request.session["alert_code"] = 5
+            return HttpResponseRedirect("/circle/" + circle_id)
+    else:
+        if ckd.wc_id:
+            form = CircleEditForm(instance=ckd, initial={"wc_id": "https://webcatalog.circle.ms/Circle/" + str(ckd.wc_id)})
+        else:
+            form = CircleEditForm(instance=ckd)
+    response["form"] = form
+    response["alert_code"] = alert_code
+    response["circle_id"] = circle_id
+    ctx = RequestContext(request, response)
+    return render_to_response("circle_edit.html", ctx)
 
 def login(request):
     response = _base_response(request)

@@ -1,12 +1,80 @@
 {% extends "base.html" %}
 
+{% block style %}
+  <style>
+  body {
+      background-color: #EEEEEE;
+  }
+
+  .navbar {
+    margin-bottom: 0;
+  }
+
+  #jumbo-1 {
+      background: url("{{ STATIC_URL }}png/bg1_1600_1200.png") no-repeat;
+      background-position:center center;
+      background-attachment: fixed;
+      background-size: cover;
+      -webkit-background-size: cover;
+      -webkit-box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2) inset;
+              box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2) inset;
+  }
+
+  #jumbo-2 {
+      background: url("{{ STATIC_URL }}png/jumbo1_714_396.png") no-repeat, #FFFFFF;
+      background-size: contain;
+      background-position: right bottom;
+  }
+
+  #jumbo-3 {
+      background: url("{{ STATIC_URL }}png/jumbo2_1340_1008.png") no-repeat, #FFFFFF;
+      background-size: contain;
+      background-position: right bottom;
+  }
+
+  .jumbo-introduce {
+      -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), 0 -2px 8px rgba(0, 0, 0, 0.2);
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), 0 -2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .jumbo-introduce p {
+      font-size: 16px;
+  }
+
+  .jumbo-introduce span{
+      background-color: #FFFFFF;
+  }
+  </style>
+{% endblock %}
+
 {% block header %}
-<div class="jumbotron">
-  <div class="container">
-    <h2>ComiKnowledge</h2>
-    <p>ComiKnowledgeで、コミケカタログのお気に入りやチェックリストを統合することができます。</p>
-    <p>これはテスト版です。何か問題がありましたら報告よろしくお願いします。</p>
-    <p><a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-lg btn-success">Twitterアカウントでログイン</a></p>
+  <div class="jumbotron" id="jumbo-1">
+    <div class="container">
+      <h2>ComiKnowledge</h2>
+      <p>ComiKnowledgeで、サークル情報を共有、チェックリストを統合。</p>
+      <p>あなたのコミケストラテジーを強力に助けます。</p>
+      <p><a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-lg btn-success">Twitterアカウントでログイン</a></p>
+    </div>
   </div>
-</div>
+
+  <div class="jumbotron jumbo-introduce" id="jumbo-2">
+    <div class="container">
+      <div class="col-sm-6">
+        <h2><span>サークル情報を共有</span></h2>
+        <p><span>各サークルのURLや配置はもちろん、サークルの待ち時間や頒布物の売り切れ情報などもタイムチャートでわかりやすく表示されます。</span></p>
+        <p><span>過去開催されたコミケの待ち時間情報も表示されるので、サークルの待ち時間の予測に役立ちます。</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="jumbotron jumbo-introduce" id="jumbo-3">
+    <div class="container">
+      <div class="col-sm-6">
+        <h2><span>チェックリストを統合</span></h2>
+        <p><span>カタROMやWebカタログで作成した複数のチェックリストは、ここで統合することができます。</span></p>
+        <p><span>さらに、ComiKnowledgeに参加しているメンバー同士でグループを作ることで、各メンバーがアップロードしたチェックリストを一つのページで統合することもできます。</span></p>
+        <p><span>もうバラバラになったチェックリストをまとめる面倒な作業とはおさらばです。</span></p>
+      </div>
+    </div>
+  </div>
 {% endblock %}
