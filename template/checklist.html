@@ -32,6 +32,9 @@
   {% ifequal alert_code 3 %}
     <div class="alert alert-danger" id="alert">リストの読み込みに失敗しました</div>
   {% endifequal %}
+  {% ifequal alert_code 4 %}
+    <div class="alert alert-danger" id="alert">リストの読み込みができませんでした<br>読み込むリストはC85用に作成されたリストを選択してください</div>
+  {% endifequal %}
 
   <div class="panel-group" id="accordion">
     <div class="panel panel-default">

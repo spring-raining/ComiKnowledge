@@ -114,7 +114,7 @@
             {% endifequal %}
             {% ifequal comment.event_code 3 %}
               {{ comment.event_time_hour|stringformat:"02d" }}:{{ comment.event_time_min|stringformat:"02d" }}
-              現数が変わりました {% if comment.comment %}({{ comment.comment }}){% endif %}
+              限数が変わりました {% if comment.comment %}({{ comment.comment }}){% endif %}
             {% endifequal %}
           </a>
         {% endfor %}

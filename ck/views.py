@@ -74,6 +74,8 @@ def checklist(request):
                 alert_code = 1
             except ChecklistInvalidError:
                 alert_code = 3
+            except ChecklistVersionError:
+                alert_code = 4
 
     response["alert_code"] = alert_code
     response["lists"] = request.user.list_set.all()

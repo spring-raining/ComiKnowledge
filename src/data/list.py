@@ -1,26 +1,32 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import json
 import os
-from django.forms import ModelForm
+import re
 
 from ck.models import *
 import src
 from src.data.parser import parse_checklist_array
 from src.translator import *
-from src.container.list import *
 from src.utils import generate_rand_str, convert_to_hankaku
 from src.error import *
 
 
 def import_list(csv_file, parent_user):
+    ALLOWED_EVENT_NAME = (
+        "ComicMarket" + str(src.COMIKET_NUMBER),
+        "ComicMarketWeb" + str(src.COMIKET_NUMBER),
+    )
+
     try:
         arr = parse_checklist_array(csv_file)
     except:
         raise ChecklistInvalidError
 
     l = List()
+    arr_lci = []
+    arr_lun = []
+    arr_lco = []
     l.list_name = os.path.splitext(csv_file.name)[0]
     l.parent_user = parent_user
     while True:
@@ -35,6 +41,8 @@ def import_list(csv_file, parent_user):
         if line[0] == "Header" and len(line) >= 5:
             if line[1] != "ComicMarketCD-ROMCatalog":
                 raise ChecklistInvalidError
+            if not line[2] in ALLOWED_EVENT_NAME:
+                raise ChecklistVersionError
             l.header_name = line[2]
             l.header_encoding = line[3]
             l.header_id = line[4]
@@ -43,22 +51,20 @@ def import_list(csv_file, parent_user):
             l.last_select_circle = int(line[2])
         elif line[0] == "MacPrintInfo" and len(line) >=2:
             l.mac_print_info = line[1]
-    l.save()
     for line in arr:
         if line[0] == "Circle":
             lc = ListCircle()
-            lc.parent_list = l
             lc.added_by = parent_user
             try:
                 lc.serial_number = int(line[1])
                 lc.color_number = int(line[2])
-                lc.page_number = int(line[3])
-                lc.cut_index = int(line[4])
+                lc.page_number = int(line[3]) if line[3].isdigit() and int(line[3]) else None
+                lc.cut_index = int(line[4]) if line[4].isdigit() and int(line[4]) else None
                 lc.week = line[5]
                 lc.area = line[6]
                 lc.block = convert_to_hankaku(line[7])
-                lc.space_number = int(line[8])
-                lc.genre_code = int(line[9])
+                lc.space_number = int(line[8]) if line[8].isdigit() and int(line[8]) else None
+                lc.genre_code = int(line[9]) if line[9].isdigit() and int(line[9]) else None
                 lc.circle_name = line[10]
                 lc.circle_name_yomigana = line[11]
                 lc.pen_name = line[12]
@@ -77,10 +83,11 @@ def import_list(csv_file, parent_user):
                 lc.rss_data = line[25]
             except IndexError:
                 pass
-            lc.save()
+            except:
+                raise ChecklistInvalidError
+            arr_lci.append(lc)
         elif line[0] == "UnKnown":
             lu = ListUnKnown()
-            lu.parent_list = l
             try:
                 lu.circle_name = line[1]
                 lu.circle_name_yomigana = line[2]
@@ -96,10 +103,11 @@ def import_list(csv_file, parent_user):
                 lu.rss = line[12]
             except IndexError:
                 pass
-            lu.save()
+            except:
+                raise ChecklistInvalidError
+            arr_lun.append(lu)
         elif line[0] == "Color":
             lc = ListColor()
-            lc.parent_list = l
             try:
                 lc.color_number = int(line[1])
                 lc.check_color = to_rgb_color(line[2])
@@ -107,7 +115,22 @@ def import_list(csv_file, parent_user):
                 lc.description = line[4]
             except IndexError:
                 pass
-            lc.save()
+            except:
+                raise ChecklistInvalidError
+            arr_lco.append(lc)
+    try:
+        l.save()
+        for i in arr_lci:
+            i.parent_list = l
+            i.save()
+        for i in arr_lun:
+            i.parent_list = l
+            i.save()
+        for i in arr_lco:
+            i.parent_list = l
+            i.save()
+    except:
+        raise ChecklistInvalidError
     return l
 
 
