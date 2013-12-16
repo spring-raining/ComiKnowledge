@@ -24,17 +24,20 @@
   <table class="table table-bordered table-condensed table-hover">
     <thead>
       <tr>
-        <th width="30"></th>
-        <th width="100">スペース</th>
-        <th width="250">サークル名</th>
+        <th width="130">スペース</th>
+        <th >サークル名</th>
         <th>メモ</th>
       </tr>
     </thead>
     <tbody>
     {% for circle in circles %}
       <tr id="{{ circle.id }}">
-        <td>{{ circle.week }}</td>
-        <td>{{ circle.get_long_space }}</td>
+        <td>
+          {% ifequal circle.week "日" %}1日目{% endifequal %}
+          {% ifequal circle.week "月" %}2日目{% endifequal %}
+          {% ifequal circle.week "火" %}3日目{% endifequal %}
+          {{ circle.get_long_space | default_if_none:"抽選漏れ" }}
+        </td>
         <td><a href="{% url "ck.views.search" %}?keyword={{ circle.circle_name|urlencode }}">{{ circle.circle_name }}</a></td>
         <td>{{ circle.memo }}
           <button class="btn btn-default btn-xs pull-right submit_delete_listcircle" value="{{ circle.id }}" name="{{ circle.circle_name }}">削除</button>

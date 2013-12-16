@@ -103,7 +103,7 @@ class ListCircle(models.Model):
         if not self.area or not self.block or not self.space_number or not self.space_number_sub:
             return None
         else:
-            return "%s%s-%d%s" % (self.area, self.block, self.space_number, self.space_number_sub)
+            return "%s%s%d%s" % (self.area, self.block, self.space_number, self.space_number_sub)
 
 #
 # CSVリストで記録されている未登録サークルのモデル

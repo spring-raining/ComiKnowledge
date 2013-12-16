@@ -145,7 +145,7 @@ def checklist_edit(request, list_id):
 
     response = _base_response(request)
     response["list"] = l
-    response["circles"] = l.listcircle_set.all()
+    response["circles"] = l.listcircle_set.all().order_by("page_number")
     ctx = RequestContext(request, response)
     return render_to_response("checklist_edit.html", ctx)
 
@@ -170,7 +170,7 @@ def group(request):
 
 
 @login_required
-def group_home(request, group_id, **redirect_response):
+def group_home(request, group_id):
     if group_id is None:
         raise Http404
     try:
@@ -186,8 +186,11 @@ def group_home(request, group_id, **redirect_response):
     members = []
     inviting_members = []
     response = _base_response(request)
-    if redirect_response:
-        response.update(redirect_response)
+    if "alert_code" in request.session:
+        response["alert_code"] = request.session["alert_code"]
+        response["list_name"] = request.session["list_name"]
+        del request.session["alert_code"]
+        del request.session["list_name"]
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
         if r.verification:
@@ -241,7 +244,9 @@ def group_checklist_create(request, group_id):
                 l.append(List.objects.get(id=i))
             try:
                 merge_list(l, g, request.POST["list_name"])
-                return group_home(request, group_id, alert_code=1, list_name=request.POST["list_name"])
+                request.session["alert_code"] = 1
+                request.session["list_name"] = request.POST["list_name"]
+                return HttpResponseRedirect("/group/" + group_id)
             except:
                 alert_code = 4
 
@@ -324,6 +329,10 @@ def circle(request, circle_id, **redirect_response):
         comments[i] = sorted(_ckc, key=lambda x:
             x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
     response = _base_response(request)
+    if "alert_code" in request.session:
+        print request.session["alert_code"]
+        response["alert_code"] = request.session["alert_code"]
+        del request.session["alert_code"]
     if redirect_response:
         response.update(redirect_response)
     if request.GET.has_key("alert_code"):
@@ -355,10 +364,12 @@ def circle_register(request):
             ckd = form.save(commit=False)
             ckd_val = ckd.validate_circle()
             if isinstance(ckd_val, CircleKnowledge):
-                return circle(request, ckd_val.circle_knowledge_id, alert_code=2)
+                request.session["alert_code"] = 2
+                return HttpResponseRedirect("/circle/" + ckd_val.circle_knowledge_id)
             elif ckd_val is True:
                 ckd.save()
-                return circle(request, ckd.parent_circle_knowledge.circle_knowledge_id, alert_code=1)
+                request.session["alert_code"] = 1
+                return HttpResponseRedirect("/circle/" + ckd.parent_circle_knowledge.circle_knowledge_id)
     else:
         form = CircleRegisterForm()
     response["form"] = form
@@ -388,9 +399,11 @@ def circle_edit(request, circle_id):
                                                        space_number=int(request.POST["space_number"]),
                                                        space_number_sub=request.POST["space_number_sub"])
             if len(_ckd) >=1 and _ckd[0].parent_circle_knowledge != ck: # すでに同じ位置に別のサークルが登録されている
-                return circle(request, _ckd[0].parent_circle_knowledge.circle_knowledge_id, alert_code=2)
+                request.session["alert_code"] = 2
+                return HttpResponseRedirect("/circle/" + _ckd[0].parent_circle_knowledge.circle_knowledge_id)
             form.save()
-            return circle(request, circle_id, alert_code=5)
+            request.session["alert_code"] = 5
+            return HttpResponseRedirect("/circle/" + circle_id)
     else:
         if ckd.wc_id:
             form = CircleEditForm(instance=ckd, initial={"wc_id": "https://webcatalog.circle.ms/Circle/" + str(ckd.wc_id)})

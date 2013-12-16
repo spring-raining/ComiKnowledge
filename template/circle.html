@@ -395,7 +395,7 @@
           $alert.removeClass("alert-success alert-danger").hide();
           form_cancel();
           if (data.alert_code == "1") {
-              document.location = "{% url "ck.views.circle" circle_knowledge.circle_knowledge_id%}?alert_code=3";
+              document.location = "{% url "ck.views.circle" circle_knowledge.circle_knowledge_id%}";
           }
           else if (data.alert_code == "2") {
               $alert.addClass("alert-danger").text("入力された時刻が正しくありません　時刻は10:00〜14:59の範囲で入力できます").show();
@@ -412,7 +412,7 @@
           var $alert = $("#alert");
           $alert.removeClass("alert-success alert-danger").hide();
           if (data.alert_code == "1") {
-              document.location = "{% url "ck.views.circle" circle_knowledge.circle_knowledge_id%}?alert_code=4";
+              document.location = "{% url "ck.views.circle" circle_knowledge.circle_knowledge_id%}";
           }
           else if (data.alert_code == "2") {
               $alert.addClass("alert-danger").text("タイムチャートのコメントを削除できませんでした").show();
