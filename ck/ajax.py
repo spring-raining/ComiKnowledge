@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
 
-from ck.views import *
+#from ck.views import *
 from src.data.group import *
 from src.data.list import *
 from src.data.knowledge import *
