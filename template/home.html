@@ -13,6 +13,10 @@
       .twitter-timeline {
           width: 100%;
       }
+
+      #tutorial {
+          margin-bottom: 20px;
+      }
   </style>
 {% endblock %}
 
@@ -56,6 +60,8 @@
           </div>
         </li>
       </ul>
+
+      <a href="{% url "ck.views.tutorial" %}" class="btn btn-success btn-block" id="tutorial">チュートリアルはこちら</a>
 
       <ul class="list-group visible-lg visible-md visible-sm" id="list-tumblr">
         <a class="list-group-item" href="http://comiknowledge.tumblr.com"><h4>ComiKnowledge 更新情報</h4></a>

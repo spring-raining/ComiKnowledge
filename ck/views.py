@@ -31,6 +31,12 @@ def index(request):
     return HttpResponse(t.render(ctx))
 
 
+def tutorial(request):
+    response = _base_response(request)
+    ctx = RequestContext(request, response)
+    return render_to_response("tutorial.html", ctx)
+
+
 @login_required
 def home(request):
     response = _base_response(request)

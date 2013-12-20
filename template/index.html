@@ -44,6 +44,16 @@
   .jumbo-introduce span{
       background-color: #FFFFFF;
   }
+
+  @media (max-width: 767px) {
+      #jumbo-2 {
+          height: 550px;
+      }
+
+      #jumbo-3 {
+          height: 750px;
+      }
+  }
   </style>
 {% endblock %}
 
@@ -53,7 +63,10 @@
       <h2>ComiKnowledge</h2>
       <p>ComiKnowledgeで、サークル情報を共有、チェックリストを統合。</p>
       <p>あなたのコミケストラテジーを強力に助けます。</p>
-      <p><a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-lg btn-success">Twitterアカウントでログイン</a></p>
+      <p>
+        <a href="{% url "socialauth_begin" "twitter" %}" class="btn btn-lg btn-success">Twitterアカウントでログイン</a>
+        <a href="{% url "ck.views.tutorial" %}" class="btn btn-lg btn-primary">より詳しく</a>
+      </p>
     </div>
   </div>
 
