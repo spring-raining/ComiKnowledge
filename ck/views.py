@@ -119,23 +119,14 @@ def checklist_download(request, list_id):
         if not r.verification:
             raise Http404
 
-        response = _base_response(request)
-        if request.method == "POST":
-            response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
-            response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
-            return output_list(response, l.list_id,
-                               memo_template=request.POST["memo"],
-                               color_option=int(request.POST["color_option"]),
-                               color_order=tuple(map(int, request.POST["color_order"].split(","))),
-                               select_color=int(request.POST["select_color"]))
-        color = {}
-        for i in l.listcolor_set.all():
-            if i.check_color:
-                color[i.color_number] = "#" + i.check_color
-        response["list"] = l
-        response["color"] = color
-        ctx = RequestContext(request, response)
-        return render_to_response("checklist_download.html", ctx)
+        option = l.extra["group_list_option"]
+        response = HttpResponse(mimetype="text/comma-separated-values; charset=utf-8")
+        response["Content-Disposition"] = (u'attachment; filename="%s.csv"' % l.list_name).encode("utf-8")
+        return output_list(response, l.list_id,
+                           memo_template=option["memo"],
+                           color_option=option["color_option"],
+                           color_order=tuple(option["color_order"]),
+                           select_color=option["select_color"])
 
 
 @login_required
@@ -257,7 +248,12 @@ def group_checklist_create(request, group_id):
             for i in lists:
                 l.append(List.objects.get(id=i))
             try:
-                merge_list(l, g, request.POST["list_name"])
+                l = merge_list(l, g, request.POST["list_name"])
+                l.extra = {"group_list_option":{"memo": request.POST["memo"],
+                                                "color_option": int(request.POST["color_option"]),
+                                                "color_order": map(int, request.POST["color_order"].split(",")),
+                                                "select_color": int(request.POST["select_color"])}}
+                l.save()
                 request.session["alert_code"] = 1
                 request.session["list_name"] = request.POST["list_name"]
                 return HttpResponseRedirect("/group/" + group_id)
@@ -265,14 +261,22 @@ def group_checklist_create(request, group_id):
                 alert_code = 4
 
     members = []
+    color_sets = {}
     for i in g.members.all():
         r = Relation.objects.get(ckgroup=g.id, ckuser=i.id)
         if r.verification:
             members.append(i)
     for member in members:
         member.lists = member.list_set.all()
+        for l in member.lists:
+            color = {}
+            for i in l.listcolor_set.all():
+                if i.check_color:
+                    color[i.color_number] = "#" + i.check_color
+            color_sets[l.id] = color
     response["group"] = g
     response["members"] = members
+    response["color_sets"] = color_sets
     response["alert_code"] = alert_code
     c = RequestContext(request, response)
     return render_to_response("group_checklist_create.html", c)
