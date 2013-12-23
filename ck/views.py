@@ -88,6 +88,8 @@ def checklist(request):
                 alert_code = 3
             except ChecklistVersionError:
                 alert_code = 4
+            except TooMuchListsError:
+                alert_code = 5
 
     response["alert_code"] = alert_code
     response["lists"] = request.user.list_set.all()

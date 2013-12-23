@@ -37,12 +37,18 @@
               Dajaxice.ck.ajax_leave_group(callback_leave_group, {"group_id": "{{ group.group_id }}"});
           }
       });
-      $("#description").dblclick(function() {
+      $("#edit_description").click(function() {
           if (description == "説明文はありません") description = "";
-          $("#form_description").attr("rows", description.split("\n").length + 1);
-          $("#form_description").text(description.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
+          $("#form_description").attr("rows", description.split("\n").length + 1)
+                  .val(description.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
+          $(this).hide();
           $("#description").hide();
           $("#form_update_description").show();
+      });
+      $("#cancel_update_description").click(function() {
+          $("#form_update_description").hide();
+          $("#description").show();
+          $("#edit_description").show();
       });
   });
 
@@ -51,6 +57,7 @@
       $(".form-group").removeClass("has-error");
       if (data.alert_code == "1") {
           $("#alert").addClass("alert-success").text(data.user_id + " を招待しました！").show();
+          $("#form_name").val("");
       }
       else if (data.alert_code == "2") {
           $("#alert").addClass("alert-danger").text("Twitter IDを入力してください").show();
@@ -72,6 +79,7 @@
       $("#description").text(description);
       $("#form_update_description").hide();
       $("#description").show();
+      $("#edit_description").show();
   }
 
   function callback_delete_list(data) {
@@ -85,7 +93,14 @@
 {% endblock %}
 
 {% block content %}
-  <h2>{{ group.name }}</h2>
+  <h2>
+    {{ group.name }}
+    <div class="btn-group pull-right">
+      <button class="btn btn-primary" id="edit_description">
+        説明文を編集
+      </button>
+    </div>
+  </h2>
 
   {% ifequal alert_code 1 %}
     <div class="alert alert-success" id="alert">{{ list_name }}を作成しました！</div>
@@ -99,7 +114,10 @@
     </div>
     <input type="hidden" name="group_id" value="{{ group.group_id }}">
     <div class="form-group">
-      <button type="button" class="btn btn-primary pull-right" id="submit_update_description">編集を終了</button>
+      <div class="pull-right">
+        <button type="button" class="btn btn-default" id="cancel_update_description">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="submit_update_description">保存</button>
+      </div>
     </div>
   </form>
 
@@ -186,5 +204,4 @@
     {% endfor %}
   </table>
 
-  <p><a href="/group/">グループ一覧へ</a></p>
 {% endblock %}

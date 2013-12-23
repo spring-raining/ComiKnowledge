@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 from django.db import models
 from django.contrib.auth import models as auth_models
 
@@ -16,9 +17,25 @@ ENCODE_CHOICES = (
 
 
 #
+# extraカラムを追加するときはBaseExtraClassを継承
+#
+class BaseExtraCrass(models.Model):
+    extra_json = models.TextField(default="{}")
+
+    class Meta:
+        abstract = True
+
+    def _get_extra(self):
+        return json.loads(self.extra_json)
+    def _set_extra(self, dic):
+        self.extra_json = json.dumps(dic)
+    extra = property(_get_extra, _set_extra)
+
+
+#
 # ユーザーの拡張モデル
 #
-class CKUser(auth_models.User):
+class CKUser(auth_models.User, BaseExtraCrass):
     thumbnail = models.ImageField(upload_to=THUMBNAILS_UPLOAD_TO, null=True)
     circlems_access_token = models.CharField(max_length=50, null=True)
     circlems_refresh_token = models.CharField(max_length=50, null=True)
@@ -26,7 +43,7 @@ class CKUser(auth_models.User):
 #
 # グループのモデル
 #
-class CKGroup(models.Model):
+class CKGroup(BaseExtraCrass):
     name = models.CharField(max_length=30)
     group_id = models.SlugField(max_length=30, unique=True, blank=False)
     members = models.ManyToManyField(CKUser, through="Relation", null=True)
@@ -35,7 +52,7 @@ class CKGroup(models.Model):
 #
 # グループとユーザーの関係を示す中間モデル
 #
-class Relation(models.Model):
+class Relation(BaseExtraCrass):
     ckuser = models.ForeignKey(CKUser)
     ckgroup = models.ForeignKey(CKGroup)
     verification = models.BooleanField(default=False)
@@ -44,7 +61,7 @@ class Relation(models.Model):
 #
 # CSVリストのモデル
 #
-class List(models.Model):
+class List(BaseExtraCrass):
     parent_user = models.ForeignKey(CKUser, null=True)
     parent_group = models.ForeignKey(CKGroup, null=True)
     list_id = models.SlugField(max_length=8, unique=True)
@@ -64,7 +81,7 @@ class List(models.Model):
 #
 # CSVリストで記録されているサークルのモデル
 #
-class ListCircle(models.Model):
+class ListCircle(BaseExtraCrass):
     parent_list = models.ForeignKey(List)
     added_by = models.ForeignKey(CKUser)
 
@@ -106,7 +123,7 @@ class ListCircle(models.Model):
 #
 # CSVリストで記録されている未登録サークルのモデル
 #
-class ListUnKnown(models.Model):
+class ListUnKnown(BaseExtraCrass):
     parent_list = models.ForeignKey(List)
 
     circle_name = models.CharField(max_length=100)
@@ -128,7 +145,7 @@ class ListUnKnown(models.Model):
 #
 # CSVリストで記録されている色のモデル
 #
-class ListColor(models.Model):
+class ListColor(BaseExtraCrass):
     parent_list = models.ForeignKey(List)
 
     color_number = models.PositiveSmallIntegerField()
@@ -219,14 +236,14 @@ class AbstractKnowledgeComment(models.Model):
 #
 # ユーザーが入力するサークルの基本情報
 #
-class CircleKnowledge(models.Model):
+class CircleKnowledge(BaseExtraCrass):
     circle_knowledge_id = models.SlugField(max_length=8, unique=True)
     comment = models.CharField(max_length=200, null=True)
 
 #
 # その年のサークルの情報
 #
-class CircleKnowledgeData(ComiketCircle):
+class CircleKnowledgeData(ComiketCircle,BaseExtraCrass):
     parent_circle_knowledge = models.ForeignKey("CircleKnowledge")
 
     # save()前に実行する すでにサークルを登録している場合CircleKnowledgeオブジェクトを返す
@@ -270,20 +287,20 @@ class CircleKnowledgeData(ComiketCircle):
 #
 # CircleKnowledgeにひもづけされるKnowledgeDataの実装
 #
-class CircleKnowledgeComment(AbstractKnowledgeComment):
+class CircleKnowledgeComment(AbstractKnowledgeComment, BaseExtraCrass):
     parent_circle_knowledge = models.ForeignKey("CircleKnowledge")
 
 #
 # ユーザーが入力する企業の基本情報
 #
-class CompanyKnowledge(models.Model):
+class CompanyKnowledge(BaseExtraCrass):
     company_knowledge_id = models.SlugField(max_length=8)
     comment = models.CharField(max_length=200, null=True)
 
 #
 # その年の企業の情報
 #
-class CompanyKnowledgeData(models.Model):
+class CompanyKnowledgeData(BaseExtraCrass):
     parent_company_knowledge = models.ForeignKey("CompanyKnowledge")
     comiket_number = models.PositiveSmallIntegerField()
     space_number = models.PositiveSmallIntegerField(null=True)
@@ -319,7 +336,7 @@ class CompanyKnowledgeData(models.Model):
 #
 # CircleKnowledgeにひもづけされるKnowledgeDataの実装
 #
-class CompanyKnowledgeComment(AbstractKnowledgeComment):
+class CompanyKnowledgeComment(AbstractKnowledgeComment, BaseExtraCrass):
     parent_company_knowledge = models.ForeignKey("CompanyKnowledge")
     day = models.PositiveSmallIntegerField(null=True,
                 choices=((1, "1日目"), (2, "2日目"), (3, "3日目")))

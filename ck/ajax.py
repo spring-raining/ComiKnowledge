@@ -10,24 +10,34 @@ from src.data.group import *
 from src.data.list import *
 from src.data.knowledge import *
 
+GROUP_LIMIT = 30
+
 @dajaxice_register
 def ajax_create_group(request, form):
     post = deserialize_form(form)
     response = {}
     if request.method != "POST":
         return
-    try:
-        g = create_group(post["group_name"], post["group_id"])
-        add_member(g, request.user)
-        alert_code = 1
-        response["group_name"] = g.name
-        response["group_id"] = g.group_id
-    except FormBlankError:
-        alert_code = 2
-    except FormDuplicateError:
-        alert_code = 3
-    except FormInvalidError:
-        alert_code = 4
+    rs = request.user.relation_set.all()
+    count = 0
+    for i in rs:
+        if i.verification:
+            count += 1
+    if count >= GROUP_LIMIT:
+        alert_code = 5
+    else:
+        try:
+            g = create_group(post["group_name"], post["group_id"])
+            add_member(g, request.user)
+            alert_code = 1
+            response["group_name"] = g.name
+            response["group_id"] = g.group_id
+        except FormBlankError:
+            alert_code = 2
+        except FormDuplicateError:
+            alert_code = 3
+        except FormInvalidError:
+            alert_code = 4
     response["alert_code"] = alert_code
     return json.dumps(response)
 
@@ -64,9 +74,23 @@ def ajax_request_join(request, form):
 
 @dajaxice_register
 def ajax_verify_join(request, group_id):
-    g = CKGroup.objects.get(group_id=group_id)
-    verify_join(g, request.user)
-    return json.dumps({"group_name": g.name, "group_id": g.group_id})
+    response = {}
+    rs = request.user.relation_set.all()
+    count = 0
+    for i in rs:
+        if i.verification:
+            count += 1
+    if count >= GROUP_LIMIT:
+        alert_code = 2
+    else:
+        g = CKGroup.objects.get(group_id=group_id)
+        verify_join(g, request.user)
+        alert_code = 1
+        response["group_name"] = g.name
+        response["group_id"] = g.group_id
+    response["alert_code"] = alert_code
+    print response
+    return json.dumps(response)
 
 
 @dajaxice_register

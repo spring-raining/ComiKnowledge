@@ -12,11 +12,18 @@ from src.utils import generate_rand_str, convert_to_hankaku
 from src.error import *
 
 
+LIST_LIMIT = 10
+
 def import_list(csv_file, parent_user):
     ALLOWED_EVENT_NAME = (
         "ComicMarket" + str(src.COMIKET_NUMBER),
         "ComicMarketWeb" + str(src.COMIKET_NUMBER),
     )
+
+    #parent_user = CKUser()
+    ls = parent_user.list_set.all()
+    if len(ls) >= LIST_LIMIT:
+        raise TooMuchListsError
 
     try:
         arr = parse_checklist_array(csv_file)

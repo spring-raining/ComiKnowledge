@@ -3,6 +3,8 @@
 from ck.models import CircleKnowledgeComment, CompanyKnowledgeComment
 from src.error import TooMuchCommentsError
 
+COMMENT_LIMIT = 5
+
 #   event_code
 #       0:  その他(event)
 #       1:  並んだ時間(start, finish)
@@ -13,7 +15,7 @@ def register_circleknowledgecomment(parent_circle_knowledge, parent_user, comike
                                     start_time_min=None, finish_time_hour=None, finish_time_min=None):
     ckc = CircleKnowledgeComment.objects.filter(parent_circle_knowledge=parent_circle_knowledge, parent_user=parent_user,
                                            comiket_number=comiket_number)
-    if len(ckc) >= 5:
+    if len(ckc) >= COMMENT_LIMIT:
         raise TooMuchCommentsError
     ckc = CircleKnowledgeComment()
     ckc.parent_circle_knowledge = parent_circle_knowledge
@@ -52,7 +54,7 @@ def register_companyknowledgecomment(parent_company_knowledge, parent_user, comi
                                     start_time_min=None, finish_time_hour=None, finish_time_min=None):
     ckc = CompanyKnowledgeComment.objects.filter(parent_company_knowledge=parent_company_knowledge, parent_user=parent_user,
                                            comiket_number=comiket_number)
-    if len(ckc) >= 5:
+    if len(ckc) >= COMMENT_LIMIT:
         raise TooMuchCommentsError
     ckc = CompanyKnowledgeComment()
     ckc.parent_company_knowledge = parent_company_knowledge

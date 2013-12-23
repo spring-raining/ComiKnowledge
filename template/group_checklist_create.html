@@ -7,6 +7,12 @@
       .members {
           margin: 5px;
       }
+
+      .member-thumbnail {
+          display: block;
+          margin: auto;
+          margin-bottom: 5px;
+      }
   </style>
 {% endblock %}
 
@@ -72,12 +78,12 @@
       <div class="panel-body">
       {% for member in members %}{% if member.lists %}
         <div class="row members">
-          <div class="col-xs-2">
+          <div class="col-sm-2">
             {% if member.thumbnail %}
-              <img src="{{ member.thumbnail.url }}" class="members_thmbnail img-thumbnail img-responsive">
+              <img src="{{ member.thumbnail.url }}" class="member-thumbnail img-thumbnail">
             {% endif %}
           </div>
-          <div class="col-xs-10">
+          <div class="col-sm-10">
             <table class="table table-condensed">
             <tr>
               <td colspan="">{{ member.first_name }}</td>

@@ -34,9 +34,21 @@ class ChecklistVersionError(Exception):
     def __str__(self):
         return 'This version cannot be read now'
 
+
 class TooMuchCommentsError(Exception):
     def __str__(self):
         return "Comments are too much"
+
+
+class TooMuchGroupsError(Exception):
+    def __str__(self):
+        return "Groups are too much"
+
+
+class TooMuchListsError(Exception):
+    def __str__(self):
+        return "Lists are too much"
+
 
 if __name__ == "__main__":
     # なにも書かないで
