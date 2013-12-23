@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
-from django.core import validators
 from django.db import models
 from django.contrib.auth import models as auth_models
 
@@ -228,9 +226,6 @@ class CircleKnowledge(models.Model):
 #
 # その年のサークルの情報
 #
-re_twitter = re.compile('^https?://(www\.)?twitter.com/')
-re_pixiv = re.compile('^http://(www\.)?pixiv\.net/member\.php\?id=\d+')
-re_url = re.compile('^https?://')
 class CircleKnowledgeData(ComiketCircle):
     parent_circle_knowledge = models.ForeignKey("CircleKnowledge")
 
@@ -296,8 +291,35 @@ class CompanyKnowledgeData(models.Model):
     url = models.URLField(max_length=256, null=True)
     description = models.CharField(max_length=400, null=True)
 
+    # save()前に実行する すでにサークルを登録している場合CompanyKnowledgeオブジェクトを返す
+    def validate_company(self):
+        try:
+            c = list(CompanyKnowledgeData.objects.filter
+                (comiket_number=src.COMIKET_NUMBER,
+                 space_number=self.space_number))[0]
+            return c.parent_company_knowledge
+        except IndexError:
+            pass
+        self.comiket_number = src.COMIKET_NUMBER
+        try:
+            self.parent_company_knowledge
+        except:
+            while True:
+                g = generate_rand_str(8)
+                try:
+                    CompanyKnowledge.objects.get(company_knowledge_id=g)
+                except:
+                    break
+            ck = CompanyKnowledge()
+            ck.company_knowledge_id = g
+            ck.save()
+            self.parent_company_knowledge = ck
+        return True
+
 #
 # CircleKnowledgeにひもづけされるKnowledgeDataの実装
 #
-class CompanyKnowledgeData(AbstractKnowledgeComment):
+class CompanyKnowledgeComment(AbstractKnowledgeComment):
     parent_company_knowledge = models.ForeignKey("CompanyKnowledge")
+    day = models.PositiveSmallIntegerField(null=True,
+                choices=((1, "1日目"), (2, "2日目"), (3, "3日目")))

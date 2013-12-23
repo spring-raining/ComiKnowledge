@@ -54,10 +54,16 @@ def home(request):
         save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
 
     # recentクエリ
-    _recent_ckc = CircleKnowledgeComment.objects.all().order_by("-write_at")[:5]
-    recent_ckc = {_recent_ckc[i]:
-                      _recent_ckc[i].parent_circle_knowledge.circleknowledgedata_set.get(comiket_number=src.COMIKET_NUMBER)
-                  for i in range(len(_recent_ckc))}
+    _recent_ckc = []
+    _recent_ckc.extend(CircleKnowledgeComment.objects.all().order_by("-write_at")[:5])
+    _recent_ckc.extend(CompanyKnowledgeComment.objects.all().order_by("-write_at")[:5])
+    s_recent_ckc = sorted(_recent_ckc, key=lambda x: x.write_at, reverse=True)
+    recent_ckc = {}
+    for i in range(min(5, len(s_recent_ckc))):
+        if isinstance(s_recent_ckc[i], CircleKnowledgeComment):
+            recent_ckc[s_recent_ckc[i]] = s_recent_ckc[i].parent_circle_knowledge.circleknowledgedata_set.get(comiket_number=src.COMIKET_NUMBER)
+        else:
+            recent_ckc[s_recent_ckc[i]] = s_recent_ckc[i].parent_company_knowledge.companyknowledgedata_set.get(comiket_number=src.COMIKET_NUMBER)
     response["recent_comments"] = recent_ckc
     ctx = RequestContext(request, response)
     return render_to_response("home.html", ctx)
@@ -283,22 +289,32 @@ def search(request):
     response = _base_response(request)
     response["keyword"] = request.GET["keyword"]
     keywords = request.GET["keyword"].split()
-    query = CircleKnowledge.objects
+    company_query = CompanyKnowledge.objects
+    circle_query = CircleKnowledge.objects
     if len(keywords) == 0:
         keywords.append("")
     for k in keywords:
-        query = query.filter(
+        company_query = company_query.filter(
+            Q(companyknowledgedata__company_name__icontains=k) |
+            Q(companyknowledgedata__description__icontains=k))
+        circle_query = circle_query.filter(
             Q(circleknowledgedata__circle_name__icontains=k) |
             Q(circleknowledgedata__pen_name__icontains=k) |
             Q(circleknowledgedata__description__icontains=k))
-    circles = []
-    for q in query:
+    results = []
+    for q in company_query:
         try:
-            _q = q.circleknowledgedata_set.all()
-            circles.append(sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0])
+            _q = q.companyknowledgedata_set.all()
+            results.append(sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0])
         except:
             pass
-    p_circles = Paginator(circles, 20)
+    for q in circle_query:
+        try:
+            _q = q.circleknowledgedata_set.all()
+            results.append(sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0])
+        except:
+            pass
+    p_circles = Paginator(results, 20)
     try:
         page = int(request.GET.get("page", "1"))
         if page > p_circles.num_pages or page < 1:
@@ -311,14 +327,14 @@ def search(request):
             pages.insert(0, pages[0] - 1)
         if pages[-1] != p_circles.num_pages:
             pages.append(pages[-1] + 1)
-    response["p_circles"] = p_circles
-    response["circles"] = p_circles.page(page)
+    response["p_results"] = p_circles
+    response["results"] = p_circles.page(page)
     response["pages"] = pages
     ctx = RequestContext(request, response)
     return render_to_response("search.html", ctx)
 
 
-def circle(request, circle_id, **redirect_response):
+def circle(request, circle_id):
     try:
         ck = CircleKnowledge.objects.get(circle_knowledge_id=circle_id)
     except:                                                             # circle_idがおかしい
@@ -326,8 +342,9 @@ def circle(request, circle_id, **redirect_response):
     try:
         ckd = ck.circleknowledgedata_set.filter(comiket_number=src.COMIKET_NUMBER)[0]
     except:                                                             # 最新のCircleKnowledgeDataがない
-        _q = ck.circleknowledgedata_set.all()
-        ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
+        raise Http404
+        #_q = ck.circleknowledgedata_set.all()
+        #ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
 
     comments = {}
     for i in range(80, src.COMIKET_NUMBER+1):
@@ -336,11 +353,8 @@ def circle(request, circle_id, **redirect_response):
             x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
     response = _base_response(request)
     if "alert_code" in request.session:
-        print request.session["alert_code"]
         response["alert_code"] = request.session["alert_code"]
         del request.session["alert_code"]
-    if redirect_response:
-        response.update(redirect_response)
     if request.GET.has_key("alert_code"):
         try:
             response["alert_code"] = int(request.GET["alert_code"])
@@ -420,6 +434,105 @@ def circle_edit(request, circle_id):
     response["circle_id"] = circle_id
     ctx = RequestContext(request, response)
     return render_to_response("circle_edit.html", ctx)
+
+
+def company(request, company_id):
+    try:
+        ck = CompanyKnowledge.objects.get(company_knowledge_id=company_id)
+    except:                                                             # company_idがおかしい
+        raise Http404
+    try:
+        ckd = ck.companyknowledgedata_set.filter(comiket_number=src.COMIKET_NUMBER)[0]
+    except:                                                             # 最新のCompanyKnowledgeDataがない
+        raise Http404
+        #_q = ck.companyknowledgedata_set.all()
+        #ckd = sorted(_q, key=lambda x: x.comiket_number, reverse=True)[0]
+
+    comments = {}
+    for i in range(80, src.COMIKET_NUMBER+1):
+        comments_value = {}
+        for j in (1, 2, 3):
+            _ckc = ck.companyknowledgecomment_set.filter(comiket_number=i, day=j)
+            comments_value[j] = sorted(_ckc, key=lambda x:
+                x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
+        comments[i] = comments_value
+    response = _base_response(request)
+    if "alert_code" in request.session:
+        response["alert_code"] = request.session["alert_code"]
+        del request.session["alert_code"]
+    if request.GET.has_key("alert_code"):
+        try:
+            response["alert_code"] = int(request.GET["alert_code"])
+            request.GET = QueryDict({})
+            request.META["QUERY_STRING"] = ""
+        except ValueError:
+            response["alert_code"] = ""
+    response["company_knowledge"] = ck
+    response["companies"] = ck.companyknowledgedata_set.all()
+    response["company_data"] = ckd
+    response["comments"] = comments
+    ctx = RequestContext(request, response)
+    return render_to_response("company.html", ctx)
+
+
+@login_required
+def company_register(request):
+    response = _base_response(request)
+    alert_code = 0
+    if request.method == "POST":
+        form = CompanyRegisterForm(request.POST)
+        if not form.is_valid():
+            alert_code = 2
+            response["invalid"] = form.errors
+        else:
+            ckd = form.save(commit=False)
+            ckd_val = ckd.validate_company()
+            if isinstance(ckd_val, CompanyKnowledge):
+                request.session["alert_code"] = 2
+                return HttpResponseRedirect("/company/" + ckd_val.company_knowledge_id)
+            elif ckd_val is True:
+                ckd.save()
+                request.session["alert_code"] = 1
+                return HttpResponseRedirect("/company/" + ckd.parent_company_knowledge.company_knowledge_id)
+    else:
+        form = CompanyRegisterForm()
+    response["form"] = form
+    response["alert_code"] = alert_code
+    ctx = RequestContext(request, response)
+    return render_to_response("company_register.html", ctx)
+
+
+@login_required
+def company_edit(request, company_id):
+    response = _base_response(request)
+    alert_code = 0
+    try:
+        ck = CompanyKnowledge.objects.get(company_knowledge_id=company_id)
+        ckd = ck.companyknowledgedata_set.filter(comiket_number=src.COMIKET_NUMBER)[0]
+    except:                                                             # company_idがおかしい
+        raise Http404
+    if request.method == "POST":
+        form = CompanyEditForm(request.POST, instance=ckd)
+        if not form.is_valid():
+            alert_code = 2
+            response["invalid"] = form.errors
+        else:
+            _ckd = CompanyKnowledgeData.objects.filter(comiket_number=src.COMIKET_NUMBER,
+                                                       space_number=int(request.POST["space_number"]))
+            if len(_ckd) >=1 and _ckd[0].parent_company_knowledge != ck: # すでに同じ位置に別のブースが登録されている
+                request.session["alert_code"] = 2
+                return HttpResponseRedirect("/company/" + _ckd[0].parent_company_knowledge.company_knowledge_id)
+            form.save()
+            request.session["alert_code"] = 5
+            return HttpResponseRedirect("/company/" + company_id)
+    else:
+        form = CompanyEditForm(instance=ckd)
+    response["form"] = form
+    response["alert_code"] = alert_code
+    response["company_id"] = company_id
+    ctx = RequestContext(request, response)
+    return render_to_response("company_edit.html", ctx)
+
 
 def login(request):
     response = _base_response(request)

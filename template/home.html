@@ -96,8 +96,12 @@
 
       <ul class="list-group">
         <li class="list-group-item"><h4>最新のコメント</h4></li>
-        {% for comment, data in recent_comments.items %}
-          <a class="list-group-item" href={% url "ck.views.circle" comment.parent_circle_knowledge.circle_knowledge_id %}>
+        {% for comment, data in recent_comments.items reversed %}
+          {% if comment.parent_circle_knowledge %}
+            <a class="list-group-item" href="{% url "ck.views.circle" comment.parent_circle_knowledge.circle_knowledge_id %}">
+          {% else %}
+            <a class="list-group-item" href="{% url "ck.views.company" comment.parent_company_knowledge.company_knowledge_id %}">
+          {% endif %}
             {% if comment.onymous %}
               {% if comment.parent_user.thumbnail %}
                 <img src="{{ comment.parent_user.thumbnail.url }}" align="left" style="height: 40px; margin-top: -10px; margin-left: -15px; margin-right: 15px; {% if forloop.last %}border-bottom-left-radius: 4px;{% endif %}">
@@ -105,7 +109,11 @@
             {% else %}
               <img src="{{ STATIC_URL }}png/thumbnail_73.png" align="left" style="height: 40px; margin-top: -10px; margin-left: -15px; margin-right: 15px;">
             {% endif %}
-            <strong>{{ data.circle_name }}</strong>
+            {% if data.circle_name %}
+              <strong>{{ data.circle_name }}</strong>
+            {% else %}
+              <strong>{{ data.company_name }}</strong> {{ comment.day }}日目
+            {% endif %}
             {% ifequal comment.event_code 0 %}
               {{ comment.event_time_hour|stringformat:"02d" }}:{{ comment.event_time_min|stringformat:"02d" }}
               {% if comment.comment %}{{ comment.comment }}{% endif %}

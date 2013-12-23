@@ -15,9 +15,6 @@
           {% if form.wc_id.errors %}$("#id_wc_id").parents(".form-group").addClass("has-error");{% endif %}
           {% if form.twitter_url.errors %}$("#id_twitter_url").parents(".form-group").addClass("has-error");{% endif %}
           {% if form.pixiv_url.errors %}$("#id_pixiv_url").parents(".form-group").addClass("has-error");{% endif %}
-
-          $("[data-toggle=tooltip]").tooltip();
-
       });
   </script>
 {% endblock %}
