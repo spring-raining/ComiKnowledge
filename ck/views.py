@@ -148,9 +148,31 @@ def checklist_edit(request, list_id):
         if not r.verification:
             raise Http404
 
+    if request.GET.has_key("sort"):
+        if request.GET["sort"] == "color":
+            l_all = l.listcircle_set.all().order_by("color_number")
+        elif request.GET["sort"] == "space":
+            l_all = l.listcircle_set.all().order_by("page_number", "cut_index")
+        elif request.GET["sort"] == "circle":
+            l_all = l.listcircle_set.all().order_by("circle_name")
+        elif request.GET["sort"] == "check":
+            l_all = l.listcircle_set.all().order_by("added_by")
+        elif request.GET["sort"] == "memo":
+            l_all = l.listcircle_set.all().order_by("memo")
+        else:
+            l_all = l.listcircle_set.all().order_by("page_number", "cut_index")
+    else:
+        l_all = l.listcircle_set.all().order_by("page_number", "cut_index")
+
     response = _base_response(request)
+    color = {}
+    for i in l.listcolor_set.all():
+        if i.check_color:
+            color[i.color_number] = "#" + i.check_color
+
     response["list"] = l
-    response["circles"] = l.listcircle_set.all().order_by("page_number")
+    response["circles"] = l_all
+    response["color"] = color
     ctx = RequestContext(request, response)
     return render_to_response("checklist_edit.html", ctx)
 
