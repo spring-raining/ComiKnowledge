@@ -2,9 +2,30 @@
 
 {% block title %}{{ list.list_name }} | {% endblock %}
 
+{% block style %}
+  <style>
+  .header-cell:hover {
+      background-color: #f5f5f5;
+      cursor: pointer;
+  }
+  </style>
+{% endblock %}
+
 {% block script %}
   <script>
+  color = ["{{ color.1 }}","{{ color.2 }}","{{ color.3 }}","{{ color.4 }}","{{ color.5 }}","{{ color.6 }}","{{ color.7 }}","{{ color.8 }}","{{ color.9 }}"];
+  default_color = ["#{{ default_color.1 }}","#{{ default_color.2 }}","#{{ default_color.3 }}","#{{ default_color.4 }}","#{{ default_color.5 }}","#{{ default_color.6 }}","#{{ default_color.7 }}","#{{ default_color.8 }}","#{{ default_color.9 }}"];
   $(function() {
+      $(".color-cell").css("background-color", function() {
+          var index = Number($(this).attr("data-color-number")) - 1;
+          return (color[index] != "")? color[index] : default_color[index];
+      });
+
+      $(".header-cell").click(function() {
+          if ($(this).attr("data-href"))
+              document.location = $(this).attr("data-href");
+      });
+
       $(".submit_delete_listcircle").click(function() {
           if (confirm($(this).attr("name")+"を削除しますか？")) {
               Dajaxice.ck.ajax_delete_listcircle(callback_delete_listcircle, {"listcircle_id":$(this).val()});
@@ -21,31 +42,38 @@
 {% block content %}
   <h3>{{ list.list_name }}</h3>
 
-  <table class="table table-bordered table-condensed table-hover">
-    <thead>
-      <tr>
-        <th width="130">スペース</th>
-        <th >サークル名</th>
-        <th>メモ</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for circle in circles %}
-      <tr id="{{ circle.id }}">
-        <td>
-          {% ifequal circle.week "日" %}1日目{% endifequal %}
-          {% ifequal circle.week "月" %}2日目{% endifequal %}
-          {% ifequal circle.week "火" %}3日目{% endifequal %}
-          {{ circle.get_long_space | default_if_none:"抽選漏れ" }}
-        </td>
-        <td><a href="{% url "ck.views.search" %}?keyword={{ circle.circle_name|urlencode }}">{{ circle.circle_name }}</a></td>
-        <td>{{ circle.memo }}
-          <button class="btn btn-default btn-xs pull-right submit_delete_listcircle" value="{{ circle.id }}" name="{{ circle.circle_name }}">削除</button>
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  <p><a href="/checklist/">チェックリスト一覧へ</a></p>
+  <div class="table-responsive">
+    <table class="table table-bordered table-condensed table-hover">
+      <thead>
+        <tr>
+          <th></th>
+          <th width="10" class="header-cell" data-href="{% url "ck.views.checklist_edit" list.list_id %}?sort=color"></th>
+          <th width="120" class="header-cell" data-href="{% url "ck.views.checklist_edit" list.list_id %}?sort=space">スペース</th>
+          <th width="150" class="header-cell" data-href="{% url "ck.views.checklist_edit" list.list_id %}?sort=circle">サークル名</th>
+          <th width="150" class="header-cell" data-href="{% url "ck.views.checklist_edit" list.list_id %}?sort=check">チェック</th>
+          <th class="header-cell" data-href="{% url "ck.views.checklist_edit" list.list_id %}?sort=memo">メモ</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for circle in circles %}
+        <tr id="{{ circle.id }}">
+          <td>{{ forloop.counter }}</td>
+          <td class="color-cell"  data-color-number="{{ circle.color_number }}"></td>
+          <td>
+            {% ifequal circle.week "日" %}1日目{% endifequal %}
+            {% ifequal circle.week "月" %}2日目{% endifequal %}
+            {% ifequal circle.week "火" %}3日目{% endifequal %}
+            {{ circle.get_long_space | default_if_none:"抽選漏れ" }}
+          </td>
+          <td><a href="{% url "ck.views.search" %}?keyword={{ circle.circle_name|urlencode }}">{{ circle.circle_name }}</a></td>
+          <td>{{ circle.added_by.first_name }}</td>
+          <td>{{ circle.memo }}
+            <button class="btn btn-default btn-xs pull-right submit_delete_listcircle" value="{{ circle.id }}" name="{{ circle.circle_name }}">削除</button>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
 {% endblock %}

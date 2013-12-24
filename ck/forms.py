@@ -3,7 +3,7 @@
 from django import forms
 import re
 
-from ck.models import CircleKnowledgeData, CircleKnowledge
+from ck.models import CircleKnowledgeData, CompanyKnowledgeData
 import src
 from src.utils import generate_rand_str
 
@@ -11,6 +11,7 @@ re_twitter = re.compile('^https?://(www\.)?twitter\.com/\w+$')
 re_pixiv = re.compile('^http://(www\.)?pixiv\.net/member\.php\?id=\d+$')
 re_url = re.compile('^https?://')
 re_wc = re.compile('^https?://webcatalog\.circle\.ms/Circle/(\d+)$')
+
 class CircleRegisterForm(forms.ModelForm):
     block_choices = [("", "---------")]
     for k, v in src.BLOCK_ID.items():
@@ -18,8 +19,8 @@ class CircleRegisterForm(forms.ModelForm):
     block_id = forms.ChoiceField(choices=block_choices)
     space_number = forms.IntegerField()
     pen_name = forms.CharField(max_length=100, required=False)
-    url = forms.URLField(max_length=4000, required=False)
-    description = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), max_length=4000, required=False)
+    url = forms.URLField(max_length=100, required=False)
+    description = forms.CharField(widget=forms.Textarea(attrs={"rows": 3, "maxlength": 4000}), required=False)
     wc_id = forms.CharField(max_length=256, required=False)
     twitter_url = forms.CharField(max_length=256, required=False)
     pixiv_url = forms.CharField(max_length=256, required=False)
@@ -67,4 +68,32 @@ class CircleRegisterForm(forms.ModelForm):
 
 
 class CircleEditForm(CircleRegisterForm):
+    pass
+
+
+class CompanyRegisterForm(forms.ModelForm):
+    space_number = forms.IntegerField()
+    url = forms.URLField(max_length=256, required=False)
+    description = forms.CharField(widget=forms.Textarea(attrs={"rows": 3, "maxlength": 4000}), required=False)
+
+    class Meta:
+        model = CompanyKnowledgeData
+        fields = ("space_number", "company_name", "url", "description",)
+
+    def clean_space_number(self):
+        try:
+            if int(self.cleaned_data["space_number"]) < 111 \
+            or int(self.cleaned_data["space_number"]) > 999:
+                raise forms.ValidationError("Invalid space number")
+            return int(self.cleaned_data["space_number"])
+        except KeyError:
+            raise forms.ValidationError("Space number must fill")
+
+    def clean_url(self):
+        if self.cleaned_data["url"] and not re_url.match(self.cleaned_data["url"]):
+            raise forms.ValidationError("Invalid URL")
+        return self.cleaned_data["url"]
+
+
+class CompanyEditForm(CompanyRegisterForm):
     pass

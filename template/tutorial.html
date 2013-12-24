@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block style %}
+  <style>
+  .row {
+      margin-bottom: 80px;
+  }
+  </style>
+{% endblock %}
+
+{% block header %}
+  <div class="container">
+    <h3>チュートリアル</h3>
+    <div class="row">
+      <p class="col-md-5">
+        まずは、お目当てのサークルや企業、あるいは行ったことのあるサークルや企業について検索してみてください。
+        誰かがもう登録していれば、結果が表示されるはずです。
+      </p>
+      <img src="{{ STATIC_URL }}png/tutorial1.png" class="col-md-7 img-thumbnail img-responsive">
+    </div>
+    <div class="row">
+      <div class="col-md-5">
+      <p>
+        もしそのサークルに並んだことがあるなら、ぜひその情報をこのサイトで共有してください。
+      </p><p>
+        サークルのページを開き、「タイムチャートを登録」をクリックすると、時刻の目盛りのついたバーが現れます。
+        並んだ時間の分だけバーをドラッグしたり、クリックしたりすることで、そのサークルの混雑状況を登録できます。
+      </p>
+      </div>
+      <img src="{{ STATIC_URL }}png/tutorial2.png" class="col-md-7 img-thumbnail img-responsive">
+    </div>
+    <div class="row">
+      <div class="col-md-5">
+        <p>
+          カタROMやWebカタログで作成したチェックリストを統合したい場合は、まずチェックリストをこのサイトにアップロードしてください。
+        </p><p>
+          「チェックリスト」の「CSVチェックリストを読み込む」をクリックすると、チェックリストをアップロードするパネルが現れます。
+        </p><p>
+          その後、「グループ」の「新しいグループ」から、新しいグループを作ってください。
+          1人だけでチェックリストを統合するときは、グループ名は適当で大丈夫です。
+        </p>
+      </div>
+      <img src="{{ STATIC_URL }}png/tutorial3.png" class="col-md-7 img-thumbnail img-responsive">
+    </div>
+    <div class="row">
+      <div class="col-md-5">
+        <p>
+          グループのページにある「チェックリストを統合」をクリックすることで、メンバーがアップロードしたチェックリストを統合できます。
+          ここでは統合するリストや色設定を決めます。
+        </p>
+        <p>
+          その後、グループのページ下部にある統合リストから、ダウンロードしたいチェックリストの「保存」ボタンをクリックすると、
+          統合したリストのダウンロードページに移ります。
+        </p>
+        <p>
+          統合したリストは各リストの情報に依存するので、リストを統合した後に統合前のチェックリストが修正されても、
+          ファイルをアップロードしなおしたりリストを統合しなおす必要はありません。
+        </p>
+      </div>
+      <img src="{{ STATIC_URL }}png/tutorial4.png" class="col-md-7 img-thumbnail img-responsive">
+    </div>
+  </div>
+{% endblock %}

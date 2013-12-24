@@ -4,7 +4,7 @@
 
 {% block style %}
   <style>
-      #alert_verify_join {
+      #alert_join {
           margin: 10px 0;
       }
   </style>
@@ -30,7 +30,8 @@
       $(".form-group").removeClass("has-error");
       if (data.alert_code == "1") {
           $("#alert").addClass("alert-success").text(data.group_name + "が作成されました！").show();
-          $("#groups").append('<tr><td width="200">'+data.group_id+'</td><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+          $("#groups").append('<tr><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+          $(".form-control").val("");
       }
       else if (data.alert_code == "2") {
           $("#alert").addClass("alert-danger").text("空欄に内容を入力してください").show();
@@ -48,16 +49,26 @@
           $("#alert").addClass("alert-danger").text("このグループIDは登録できません").show();
           $("#form_id").parents(".form-group").addClass("has-error");
       }
+      else if (data.alert_code == "5") {
+          $("#alert").addClass("alert-danger").text("1人が参加出来るグループは30個までです").show();
+      }
   }
 
   function callback_verify_join(data) {
-      $("#alert_verify_join").text(data.group_name + "に参加しました！").show();
-      $("tr[title='"+data.group_id+"']").remove();
-      $("#groups").append('<tr><td width="200">'+data.group_id+'</td><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+      $("#alert_join").removeClass("alert-success alert-danger").hide();
+      $(".form-group").removeClass("has-error");
+      if (data.alert_code == "1") {
+          $("#alert_join").addClass("alert-success").text(data.group_name + "に参加しました！").show();
+          $("tr[title='"+data.group_id+"']").remove();
+          $("#groups").append('<tr><td><a href="/group/'+data.group_id+'">'+data.group_name+'</a></td></tr>');
+      }
+      else if (data.alert_code == "2") {
+          $("#alert_join").addClass("alert-danger").text("1人が参加出来るグループは30個までです").show();
+      }
   }
 
   function callback_reject_join(data) {
-      $("#alert_verify_join").text(data.group_name + "の招待を却下しました").show();
+      $("#alert_join").addClass("alert-success").text(data.group_name + "の招待を却下しました").show();
       $("tr[title='"+data.group_id+"']").remove();
   }
   </script>
@@ -105,8 +116,7 @@
   </div>
 
   </div>
-  <div class="alert alert-success" id="alert_verify_join" hidden></div>
-  <div class="alert alert-success" id="alert_reject_join" hidden></div>
+  <div class="alert" id="alert_join" hidden></div>
 
   {% if invited_groups %}
     <h3>招待されているグループ</h3>
