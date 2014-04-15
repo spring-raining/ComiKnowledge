@@ -12,30 +12,17 @@
 {% endblock %}
 
 {% block script %}
+  <script type="text/javascript" src="{{ STATIC_URL }}js/checklist_edit.js"></script>
   <script>
-  color = ["{{ color.1 }}","{{ color.2 }}","{{ color.3 }}","{{ color.4 }}","{{ color.5 }}","{{ color.6 }}","{{ color.7 }}","{{ color.8 }}","{{ color.9 }}"];
-  default_color = ["#{{ default_color.1 }}","#{{ default_color.2 }}","#{{ default_color.3 }}","#{{ default_color.4 }}","#{{ default_color.5 }}","#{{ default_color.6 }}","#{{ default_color.7 }}","#{{ default_color.8 }}","#{{ default_color.9 }}"];
-  $(function() {
-      $(".color-cell").css("background-color", function() {
-          var index = Number($(this).attr("data-color-number")) - 1;
-          return (color[index] != "")? color[index] : default_color[index];
-      });
-
-      $(".header-cell").click(function() {
-          if ($(this).attr("data-href"))
-              document.location = $(this).attr("data-href");
-      });
-
-      $(".submit_delete_listcircle").click(function() {
-          if (confirm($(this).attr("name")+"を削除しますか？")) {
-              Dajaxice.ck.ajax_delete_listcircle(callback_delete_listcircle, {"listcircle_id":$(this).val()});
-          }
-      });
-  });
-
-  function callback_delete_listcircle(data) {
-      $("tr[id="+data.id+"]").fadeOut("slow");
-  }
+    (function() {
+      var color = ["{{ color.1 }}","{{ color.2 }}","{{ color.3 }}","{{ color.4 }}","{{ color.5 }}","{{ color.6 }}","{{ color.7 }}","{{ color.8 }}","{{ color.9 }}"];
+      var default_color = ["#{{ default_color.1 }}","#{{ default_color.2 }}","#{{ default_color.3 }}","#{{ default_color.4 }}","#{{ default_color.5 }}","#{{ default_color.6 }}","#{{ default_color.7 }}","#{{ default_color.8 }}","#{{ default_color.9 }}"];
+      var args = {
+        color: color,
+        default_color: default_color
+      };
+      return new ChecklistEdit(args);
+    })();
   </script>
 {% endblock %}
 

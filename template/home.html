@@ -23,28 +23,11 @@
 
 {% block script %}
   <script type="text/javascript" src="http://comiknowledge.tumblr.com/api/read/json"></script>
-
+  <script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
   <script>
-  $(function() {
-      for (i=0; i<5; i++) {
-          if (i >= tumblr_api_read["posts-total"]) break;
-          var $tumblr = $('<a class="list-group-item"></a>');
-          $tumblr.addClass("list-group-item");
-          $tumblr.attr("href", tumblr_api_read["posts"][i]["url-with-slug"]);
-          var $tumblrHeading = $('<h5 class="list-group-item-heading"></h5>');
-          $tumblrHeading.text(tumblr_api_read["posts"][i]["regular-title"]);
-          $tumblr.append($tumblrHeading);
-          var $tumblrText = $('<small class="list-group-item-text"></small>');
-          $tumblrText.text(function() {
-              if ($(tumblr_api_read["posts"][i]["regular-body"]).text().length > 80)
-                  return $(tumblr_api_read["posts"][i]["regular-body"]).text().substr(0, 80) + "…";
-              else
-                  return $(tumblr_api_read["posts"][i]["regular-body"]).text();
-          });
-          $tumblr.append($tumblrText);
-          $("#list-tumblr").append($tumblr);
-      }
-  });
+    (function() {
+      return new Home();
+    })();
   </script>
 {% endblock %}
 

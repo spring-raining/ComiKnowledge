@@ -3,21 +3,7 @@
 {% block title %}チェックリスト | {% endblock %}
 
 {% block script %}
-  <script>
-  $(function() {
-      $("#navbar-checklist").addClass("active");
-
-      $(".submit_delete_list").click(function() {
-          if (confirm($(this).attr("name")+"を削除しますか？")) {
-              Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
-          }
-      });
-  });
-
-  function callback_delete_list(data) {
-      $("tr[id="+data.list_id+"]").fadeOut("slow");
-  }
-  </script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/checklist.js"></script>
 {% endblock %}
 
 {% block content %}

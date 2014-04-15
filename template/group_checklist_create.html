@@ -26,51 +26,20 @@
 
 {% block script %}
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/group_checklist_create.js"></script>
   <script>
-  var color = {};
-  {% for k, v in color_sets.items %}
-      color["{{ k }}"] = ["{{ v.1 }}","{{ v.2 }}","{{ v.3 }}","{{ v.4 }}","{{ v.5 }}","{{ v.6 }}","{{ v.7 }}","{{ v.8 }}","{{ v.9 }}"];
-  {% endfor %}
-  default_color = ["#{{ default_color.1 }}","#{{ default_color.2 }}","#{{ default_color.3 }}","#{{ default_color.4 }}","#{{ default_color.5 }}","#{{ default_color.6 }}","#{{ default_color.7 }}","#{{ default_color.8 }}","#{{ default_color.9 }}"];
-  $(function() {
-      $(".form_first").change(function() {
-          $(".form_list[value="+$(this).val()+"]").prop("checked", true);
-          for (i=1; i <= 9; i++) {
-              var $target = $(".sorting_color_"+i + ",.select_color_"+i);
-              if (color[$(this).val()][i-1] != "")
-                  $target.css("background-color", color[$(this).val()][i-1]);
-              else
-                  $target.css("background-color", default_color[i-1]);
-          }
-      });
-      $(".form_list").click(function() {
-          if (!$(this).prop("checked")) {
-              var $target = $(".form_first[value="+$(this).val()+"]");
-              if ($target.prop("checked")) {
-                  $target.prop("checked", false);
-                  for (i=1; i <= 9; i++)
-                      $(".sorting_color_"+i + ",.select_color_"+i).css("background-color", default_color[i-1]);
-              }
-          }
-      });
-
-      for (i=1; i <= 9; i++) {
-          $(".sorting_color_"+i + ",.select_color_"+i)
-              .css("width", "32px")
-              .css("height", "32px")
-              .css("background-color", default_color[i-1])
-      }
-
-      $("#sortable-color").sortable( {
-          axis: "x",
-          cursor: "move"
-      });
-
-      $("#submit").click(function() {
-          $("#color-order").val($("#sortable-color").sortable("toArray"));
-          $("form").submit();
-      });
-  });
+    (function() {
+      var color = {};
+      {% for k, v in color_sets.items %}
+        color["{{ k }}"] = ["{{ v.1 }}","{{ v.2 }}","{{ v.3 }}","{{ v.4 }}","{{ v.5 }}","{{ v.6 }}","{{ v.7 }}","{{ v.8 }}","{{ v.9 }}"];
+      {% endfor %}
+      var default_color = ["#{{ default_color.1 }}","#{{ default_color.2 }}","#{{ default_color.3 }}","#{{ default_color.4 }}","#{{ default_color.5 }}","#{{ default_color.6 }}","#{{ default_color.7 }}","#{{ default_color.8 }}","#{{ default_color.9 }}"];
+      var args = {
+        color: color,
+        default_color: default_color
+      };
+      return new GroupChecklistCreate(args);
+    })();
   </script>
 {% endblock %}
 

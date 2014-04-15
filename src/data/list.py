@@ -3,6 +3,7 @@
 import csv
 import os
 import re
+import dajaxice.finders
 
 from ck.models import *
 import src
