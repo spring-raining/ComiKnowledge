@@ -6,6 +6,8 @@ from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
 
 #from ck.views import *
+
+from ck.models import *
 from src.data.group import *
 from src.data.list import *
 from src.data.knowledge import *
@@ -89,7 +91,6 @@ def ajax_verify_join(request, group_id):
         response["group_name"] = g.name
         response["group_id"] = g.group_id
     response["alert_code"] = alert_code
-    print response
     return json.dumps(response)
 
 
@@ -124,7 +125,6 @@ def ajax_delete_list(request, list_id):
 
 @dajaxice_register
 def ajax_create_list(request, form):
-    print "a"
     post = deserialize_form(form)
     response = {}
     if request.method != "POST":
@@ -260,3 +260,78 @@ def ajax_delete_companyknowledgecomment(request, comment_id):
         return json.dumps({"alert_code": 1})
     else:
         return json.dumps({"alert_code": 2})
+
+
+@dajaxice_register
+def ajax_get_circleknowledgecomments(request, circle_knowledge_id):
+    comments = {}
+    try:
+        ck = CircleKnowledge.objects.get(circle_knowledge_id=circle_knowledge_id)
+        for i in range(80, src.COMIKET_NUMBER+1):
+            _ckc = ck.circleknowledgecomment_set.filter(comiket_number=i)
+            comments[i] = sorted(_ckc, key=lambda x:
+                x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
+    except:
+        return
+
+    response = {}
+    for num, comments_ in comments.items():
+        a = []
+        for com in comments_:
+            b = {}
+            b["event_code"] = com.event_code
+            b["start_time_hour"] = com.start_time_hour
+            b["start_time_min"] = com.start_time_min
+            b["finish_time_hour"] = com.finish_time_hour
+            b["finish_time_min"] = com.finish_time_min
+            b["event_time_hour"] = com.event_time_hour
+            b["event_time_min"] = com.event_time_min
+            b["id"] = com.id
+            b["comment"] = com.comment
+            b["onymous"] = com.onymous
+            if com.onymous:
+                #b["parent_user__thumbnail"] = c.parent_user.thumbnail
+                b["parent_user__thumbnail__url"] = com.parent_user.thumbnail.url
+                b["parent_user__username"] = com.parent_user.username
+            a.append(b)
+        response[num] = a
+    return json.dumps(response)
+
+
+@dajaxice_register
+def ajax_get_companyknowledgecomments(request, company_knowledge_id):
+    comments = {}
+    try:
+        ck = CompanyKnowledge.objects.get(company_knowledge_id=company_knowledge_id)
+        for i in range(80, src.COMIKET_NUMBER+1):
+            _ckc = ck.companyknowledgecomment_set.filter(comiket_number=1)
+            comments[i] = sorted(_ckc, key=lambda x:
+                x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
+    except:
+        return
+
+    response = {}
+    for num, comments_ in comments.items():
+        a = {1: [], 2: [], 3: []}
+
+        for com in comments_:
+            b = {}
+            day = com.day
+            b["event_code"] = com.event_code
+            b["start_time_hour"] = com.start_time_hour
+            b["start_time_min"] = com.start_time_min
+            b["finish_time_hour"] = com.finish_time_hour
+            b["finish_time_min"] = com.finish_time_min
+            b["event_time_hour"] = com.event_time_hour
+            b["event_time_min"] = com.event_time_min
+            b["id"] = com.id
+            b["comment"] = com.comment
+            b["day"] = day
+            b["onymous"] = com.onymous
+            if com.onymous:
+                #b["parent_user__thumbnail"] = c.parent_user.thumbnail
+                b["parent_user__thumbnail__url"] = com.parent_user.thumbnail.url
+                b["parent_user__username"] = com.parent_user.username
+            a[day].append(b)
+        response[num] = a
+    return json.dumps(response)
