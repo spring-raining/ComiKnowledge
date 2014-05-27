@@ -36,9 +36,11 @@ def register_circleknowledgecomment(parent_circle_knowledge, parent_user, comike
         ckc.event_time_min = event_time_min
     ckc.save()
 
-def delete_circleknowledgecomment(comment_id):
+def delete_circleknowledgecomment(comment_id, parent_user):
     try:
         ckc = CircleKnowledgeComment.objects.get(id=comment_id)
+        if ckc.parent_user_id != parent_user.id:
+            raise
         ckc.delete()
         return True
     except:
@@ -76,9 +78,11 @@ def register_companyknowledgecomment(parent_company_knowledge, parent_user, comi
         ckc.event_time_min = event_time_min
     ckc.save()
 
-def delete_companyknowledgecomment(comment_id):
+def delete_companyknowledgecomment(comment_id, parent_user):
     try:
         ckc = CompanyKnowledgeComment.objects.get(id=comment_id)
+        if ckc.parent_user_id != parent_user.id:
+            raise
         ckc.delete()
         return True
     except:

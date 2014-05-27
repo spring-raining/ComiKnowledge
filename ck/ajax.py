@@ -201,7 +201,7 @@ def ajax_register_circleknowledgecomment(request, post):
 
 @dajaxice_register
 def ajax_delete_circleknowledgecomment(request, comment_id):
-    if delete_circleknowledgecomment(comment_id):
+    if delete_circleknowledgecomment(comment_id=comment_id, parent_user=request.user):
         request.session["alert_code"] = 4
         return json.dumps({"alert_code": 1})
     else:
@@ -255,7 +255,7 @@ def ajax_register_companyknowledgecomment(request, post):
 
 @dajaxice_register
 def ajax_delete_companyknowledgecomment(request, comment_id):
-    if delete_companyknowledgecomment(comment_id):
+    if delete_companyknowledgecomment(comment_id=comment_id, parent_user=request.user):
         request.session["alert_code"] = 4
         return json.dumps({"alert_code": 1})
     else:
@@ -293,6 +293,7 @@ def ajax_get_circleknowledgecomments(request, circle_knowledge_id):
                 #b["parent_user__thumbnail"] = c.parent_user.thumbnail
                 b["parent_user__thumbnail__url"] = com.parent_user.thumbnail.url
                 b["parent_user__username"] = com.parent_user.username
+            b["is_my_comment"] = (request.user == com.parent_user)
             a.append(b)
         response[num] = a
     return json.dumps(response)
@@ -304,7 +305,7 @@ def ajax_get_companyknowledgecomments(request, company_knowledge_id):
     try:
         ck = CompanyKnowledge.objects.get(company_knowledge_id=company_knowledge_id)
         for i in range(80, src.COMIKET_NUMBER+1):
-            _ckc = ck.companyknowledgecomment_set.filter(comiket_number=1)
+            _ckc = ck.companyknowledgecomment_set.filter(comiket_number=i)
             comments[i] = sorted(_ckc, key=lambda x:
                 x.start_time_hour * 60 + x.start_time_min if x.start_time_hour else x.event_time_hour * 60 + x.event_time_min)
     except:
@@ -332,6 +333,7 @@ def ajax_get_companyknowledgecomments(request, company_knowledge_id):
                 #b["parent_user__thumbnail"] = c.parent_user.thumbnail
                 b["parent_user__thumbnail__url"] = com.parent_user.thumbnail.url
                 b["parent_user__username"] = com.parent_user.username
+            b["is_my_comment"] = (request.user == com.parent_user)
             a[day].append(b)
         response[num] = a
     return json.dumps(response)
