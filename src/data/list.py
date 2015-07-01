@@ -335,5 +335,4 @@ def output_list(response, list_id, memo_template, color_option=1, color_order=(1
     return response
 
 if __name__ == "__main__":
-    # テストは書いちゃらめええええ
     pass

@@ -29,5 +29,4 @@ class Sqlite():
 
 
 if __name__ == "__main__":
-    # テストは書かないで
     pass

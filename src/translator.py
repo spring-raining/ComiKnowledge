@@ -8,5 +8,4 @@ def to_rgb_color(bgr):
 
 
 if __name__ == "__main__":
-    # 何も書いてはいけない
     pass

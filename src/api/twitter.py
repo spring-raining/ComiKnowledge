@@ -34,5 +34,4 @@ def save_twitter_icon(user, access_token, access_token_secret):
 
 
 if __name__ == "__main__":
-    # へんじがないただのpassのようだ
     pass

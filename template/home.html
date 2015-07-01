@@ -63,60 +63,6 @@
         </div>
       {% endif %}
 
-      <ul class="list-group">
-        <li class="list-group-item">
-          <h4>サークル名・ペンネームで検索</h4>
-          <form class="form-inline" action="{% url "ck.views.search" %}" role="search" method="post">{% csrf_token %}
-            <div class="form-group" style="width: 89%; display: inline-block;">
-              <label class="sr-only" for="form-home-search">検索</label>
-              <input type="text" class="form-control" id="form-home-search" name="keyword" placeholder="検索">
-            </div>
-            <div class="form-group" style="width: 10%; display: inline-block;">
-              <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
-            </div>
-          </form>
-        </li>
-      </ul>
-
-      <ul class="list-group">
-        <li class="list-group-item"><h4>最新のコメント</h4></li>
-        {% for comment, data in recent_comments.items reversed %}
-          {% if comment.parent_circle_knowledge %}
-            <a class="list-group-item" href="{% url "ck.views.circle" comment.parent_circle_knowledge.circle_knowledge_id %}">
-          {% else %}
-            <a class="list-group-item" href="{% url "ck.views.company" comment.parent_company_knowledge.company_knowledge_id %}">
-          {% endif %}
-            {% if comment.onymous %}
-              {% if comment.parent_user.thumbnail %}
-                <img src="{{ comment.parent_user.thumbnail.url }}" align="left" style="height: 40px; margin-top: -10px; margin-left: -15px; margin-right: 15px; {% if forloop.last %}border-bottom-left-radius: 4px;{% endif %}">
-              {% endif %}
-            {% else %}
-              <img src="{{ STATIC_URL }}png/thumbnail_73.png" align="left" style="height: 40px; margin-top: -10px; margin-left: -15px; margin-right: 15px;">
-            {% endif %}
-            {% if data.circle_name %}
-              <strong>{{ data.circle_name }}</strong>
-            {% else %}
-              <strong>{{ data.company_name }}</strong> {{ comment.day }}日目
-            {% endif %}
-            {% ifequal comment.event_code 0 %}
-              {{ comment.event_time_hour|stringformat:"02d" }}:{{ comment.event_time_min|stringformat:"02d" }}
-              {% if comment.comment %}{{ comment.comment }}{% endif %}
-            {% endifequal %}
-            {% ifequal comment.event_code 1 %}
-              {{ comment.start_time_hour|stringformat:"02d" }}:{{ comment.start_time_min|stringformat:"02d" }} 〜 {{ comment.finish_time_hour|stringformat:"02d" }}:{{ comment.finish_time_min|stringformat:"02d" }}
-              並びました {% if comment.comment %}({{ comment.comment }}){% endif %}
-            {% endifequal %}
-            {% ifequal comment.event_code 2 %}
-              {{ comment.event_time_hour|stringformat:"02d" }}:{{ comment.event_time_min|stringformat:"02d" }}
-              頒布物が売り切れました {% if comment.comment %}({{ comment.comment }}){% endif %}
-            {% endifequal %}
-            {% ifequal comment.event_code 3 %}
-              {{ comment.event_time_hour|stringformat:"02d" }}:{{ comment.event_time_min|stringformat:"02d" }}
-              限数が変わりました {% if comment.comment %}({{ comment.comment }}){% endif %}
-            {% endifequal %}
-          </a>
-        {% endfor %}
-      </ul>
 
       <ul class="list-group">
         <a class="list-group-item" href="https://twitter.com/comiketofficial"><h4>@comiketofficial</h4></a>

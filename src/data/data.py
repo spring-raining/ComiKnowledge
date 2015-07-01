@@ -59,5 +59,4 @@ def read_cut_from_sqlite(circle_number, sqlite):
         return
 
 if __name__ == "__main__":
-    # なにもかいてはいけない
     pass

@@ -51,5 +51,4 @@ class TooMuchListsError(Exception):
 
 
 if __name__ == "__main__":
-    # なにも書かないで
     pass
