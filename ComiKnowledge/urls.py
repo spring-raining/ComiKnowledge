@@ -28,6 +28,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/checklist/(?P<list_id>\w+)/$', 'ck.api.checklist'),
     url(r'^api/v1/group/$', 'ck.api.group_list'),
     url(r'^api/v1/group/(?P<group_id>\w+)/$', 'ck.api.group'),
+    url(r'^api/v1/invited_group/$', 'ck.api.invited_group_list'),
 
     url(r'', include('social_auth.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
