@@ -24,9 +24,9 @@ urlpatterns = patterns('',
     url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
     url(r'^group/(?P<group_id>\w+)/create$', 'ck.views.group_checklist_create'),
 
-    url(r'^api/v1/checklist/', 'ck.api.checklist_list'),
+    url(r'^api/v1/checklist/$', 'ck.api.checklist_list'),
     url(r'^api/v1/checklist/(?P<list_id>\w+)/$', 'ck.api.checklist'),
-    url(r'^api/v1/group/', 'ck.api.group_list'),
+    url(r'^api/v1/group/$', 'ck.api.group_list'),
     url(r'^api/v1/group/(?P<group_id>\w+)/$', 'ck.api.group'),
 
     url(r'', include('social_auth.urls')),
