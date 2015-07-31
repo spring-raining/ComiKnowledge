@@ -52,7 +52,7 @@
             {% ifequal circle.week "火" %}3日目{% endifequal %}
             {{ circle.get_long_space | default_if_none:"抽選漏れ" }}
           </td>
-          <td><a href="{% url "ck.views.search" %}?keyword={{ circle.circle_name|urlencode }}">{{ circle.circle_name }}</a></td>
+          <td>{{ circle.circle_name }}</td>
           <td>{{ circle.added_by.first_name }}</td>
           <td>{{ circle.memo }}
             <button class="btn btn-default btn-xs pull-right submit_delete_listcircle" value="{{ circle.id }}" name="{{ circle.circle_name }}">削除</button>
