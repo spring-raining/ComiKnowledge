@@ -24,11 +24,8 @@ urlpatterns = patterns('',
     url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
     url(r'^group/(?P<group_id>\w+)/create$', 'ck.views.group_checklist_create'),
 
-    url(r'^api/v1/checklist/$', 'ck.api.checklist_list'),
-    url(r'^api/v1/checklist/(?P<list_id>\w+)/$', 'ck.api.checklist'),
-    url(r'^api/v1/group/$', 'ck.api.group_list'),
-    url(r'^api/v1/group/(?P<group_id>\w+)/$', 'ck.api.group'),
-    url(r'^api/v1/invited_group/$', 'ck.api.invited_group_list'),
+    url(r'^api/auth/', include('rest_framework_social_oauth2.urls')),
+    url(r'^api/v1/', include('api.urls')),
 
     url(r'', include('social_auth.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
