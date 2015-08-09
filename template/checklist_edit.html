@@ -47,9 +47,9 @@
           <td>{{ forloop.counter }}</td>
           <td class="color-cell"  data-color-number="{{ circle.color_number }}"></td>
           <td>
-            {% ifequal circle.week "日" %}1日目{% endifequal %}
-            {% ifequal circle.week "月" %}2日目{% endifequal %}
-            {% ifequal circle.week "火" %}3日目{% endifequal %}
+            {% ifequal circle.week "金" %}1日目{% endifequal %}
+            {% ifequal circle.week "土" %}2日目{% endifequal %}
+            {% ifequal circle.week "日" %}3日目{% endifequal %}
             {{ circle.get_long_space | default_if_none:"抽選漏れ" }}
           </td>
           <td>{{ circle.circle_name }}</td>

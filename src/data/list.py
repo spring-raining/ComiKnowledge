@@ -13,7 +13,7 @@ from src.utils import generate_rand_str, convert_to_hankaku
 from src.error import *
 
 
-LIST_LIMIT = 10
+LIST_LIMIT = 100
 
 def import_list(csv_file, parent_user):
     ALLOWED_EVENT_NAME = (
