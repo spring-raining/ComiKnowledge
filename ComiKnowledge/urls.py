@@ -30,9 +30,9 @@ urlpatterns = patterns('',
     url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
     url(r'^group/(?P<group_id>\w+)/create$', 'ck.views.group_checklist_create'),
 
-    url(r'^api/auth/', include('rest_auth.urls')),
-    url(r'^api/auth/registration', include('rest_auth.registration.urls')),
-    url(r'^api/auth/twitter$', TwitterApiLogin.as_view(), name="twitter_login"),
+    #url(r'^api/auth/', include('rest_auth.urls')),
+    #url(r'^api/auth/registration', include('rest_auth.registration.urls')),
+    #url(r'^api/auth/twitter$', TwitterApiLogin.as_view(), name="twitter_login"),
     url(r'^api/v1/', include('api.urls')),
 
     url(r'^accounts/', include('allauth.urls')),
