@@ -3,6 +3,7 @@
 import json
 from django.db import models
 from django.contrib.auth import models as auth_models
+from django.contrib.auth.models import AbstractUser
 
 from ComiKnowledge.settings import THUMBNAILS_UPLOAD_TO
 import src
@@ -35,7 +36,7 @@ class BaseExtraCrass(models.Model):
 #
 # ユーザーの拡張モデル
 #
-class CKUser(auth_models.User, BaseExtraCrass):
+class CKUser(AbstractUser, BaseExtraCrass):
     thumbnail = models.ImageField(upload_to=THUMBNAILS_UPLOAD_TO, null=True)
     circlems_access_token = models.CharField(max_length=50, null=True)
     circlems_refresh_token = models.CharField(max_length=50, null=True)

@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotModif
 from django.shortcuts import render_to_response
 from django.template import loader, RequestContext
 from social_auth.db.django_models import UserSocialAuth
+from allauth.socialaccount.models import SocialToken, SocialAccount
 import urllib
 
 from ComiKnowledge import settings
@@ -49,8 +50,8 @@ def home(request):
 
     # サムネイル更新
     if not request.user.thumbnail or not os.path.exists(os.path.join(settings.MEDIA_ROOT, request.user.thumbnail.name)):
-        usa = UserSocialAuth.objects.get(user_id=request.user.id)
-        save_twitter_icon(request.user, usa.tokens["oauth_token"], usa.tokens["oauth_token_secret"])
+        st = SocialToken.objects.get(account_id=SocialAccount.objects.get(user_id=request.user.id))
+        save_twitter_icon(request.user, st.token, st.token_secret)
 
     ctx = RequestContext(request, response)
     return render_to_response("home.html", ctx)

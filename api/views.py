@@ -4,8 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
 from datetime import datetime
 
@@ -24,22 +27,37 @@ class JSONResponse(HttpResponse):
 #   http methodに応じてディスパッチ
 #
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def checklist(request, list_id):
     if request.method == "GET":
         return get_checklist(request, list_id)
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def checklist_list(request):
     if request.method == "GET":
         return get_checklist_list(request)
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def group(request, group_id):
     if request.method == "GET":
         return get_group(request, group_id)
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def group_list(request):
     if request.method == "GET":
         return get_group_list(request)
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def invited_group_list(request):
     if request.method == "GET":
         return get_invited_group_list(request)
