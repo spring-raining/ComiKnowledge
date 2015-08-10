@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from datetime import datetime
 
 from ck.models import *
+from src.data.list import prepare_circle_obj
 
 #
 #   REST API用にHttpResponseをオーバーラップ
@@ -36,12 +37,22 @@ def obtain_token_by_session(request):
         return post_obtain_token_by_session(request)
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def checklist(request, list_id):
     if request.method == "GET":
         return get_checklist(request, list_id)
+    if request.method == "POST":
+        return post_checklist_circle(request, list_id)
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication))
+@permission_classes((IsAuthenticated,))
+def checklist_on_delete(request, list_id):
+    if request.method == "POST":
+        return delete_checklist_circle(request, list_id)
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
@@ -72,40 +83,71 @@ def invited_group_list(request):
         return get_invited_group_list(request)
 
 #
-#   create_token_by_session
+#   obtain_token_by_session
 #   POST    /api/v1/token
 #
 def post_obtain_token_by_session(request):
     (token, _) = Token.objects.get_or_create(user = request.user)
-    return JSONResponse({"token": token.key})
+    return JSONResponse({"token": token.key}, created=201)
 
 #
 #   get_checklist
 #   GET     /api/v1/checklist/<list_id>/
 #
 def get_checklist(request, list_id):
-    if list_id is None:
+    list = _get_permitted_checklist_obj(request, list_id)
+    if not list:
         return JSONResponse({}, status=404)
-    try:
-        list = List.objects.get(list_id=list_id)
-    except:                                                             # list_idがおかしい
-        return JSONResponse({}, status=404)
-    if list.parent_user:
-        if list.parent_user != request.user:                            # リストがログインしているユーザーのものでない
-            return JSONResponse({}, status=404)
-    elif list.parent_group:
-        g = list.parent_group
-        if not g.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
-            return JSONResponse({}, status=404)
-        r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
-        if not r.verification:
-            return JSONResponse({}, status=404)
 
     circles = list.listcircle_set.all().order_by("page_number", "cut_index")
     response = {}
     response["list_info"] = serializers.serialize("python", [list])[0]["fields"]
     response["circles"] = [d["fields"] for d in serializers.serialize("python", circles)]
     return JSONResponse(response, status=200)
+
+#
+#   post_checklist_circle
+#   POST    /api/v1/checklist/<list_id>/
+#
+def post_checklist_circle(request, list_id):
+    list = _get_permitted_checklist_obj(request, list_id)
+    if not list:
+        return JSONResponse({}, status=404)
+    try:
+        circle = prepare_circle_obj(request.POST.dict(), request.user)
+    except:
+        return JSONResponse({"detail": "Invalid query."}, status=400)
+    try:
+        lc = list.listcircle_set.get(added_by=request.user, serial_number=circle.serial_number)
+        lc.delete()
+    except:
+        pass
+    finally:
+        circle.parent_list = list
+        circle.save()
+    response = {}
+    response["circle"] = serializers.serialize("python", [circle])[0]["fields"]
+    return JSONResponse(response, status=200)
+
+
+#
+#   delete_checklist_circle
+#   POST  /api/v1/checklist/<list_id>/delete/
+#
+def delete_checklist_circle(request, list_id):
+    list = _get_permitted_checklist_obj(request, list_id)
+    if not list:
+        return JSONResponse({}, status=404)
+
+    if not request.POST.get("serial_number") or not request.POST.get("serial_number").isdigit():
+        return JSONResponse({"detail": "serial_number is required."}, status=400)
+    try:
+        serial_number = int(request.POST.get("serial_number"))
+        lc = list.listcircle_set.get(added_by=request.user, serial_number=serial_number)
+        lc.delete()
+    except:
+        return JSONResponse({"detail": "Circle not found."}, status=400)
+    return JSONResponse({"detail": "Delete succeed."}, status=200)
 
 #
 #   get_checklist_list
@@ -122,16 +164,8 @@ def get_checklist_list(request):
 #   GET     /api/v1/group/<group_id>/
 #
 def get_group(request, group_id):
-    if group_id is None:
-        return JSONResponse({}, status=404)
-    try:
-        g = CKGroup.objects.get(group_id=group_id)
-    except:                                                             # group_idがおかしい
-        return JSONResponse({}, status=404)
-    if not g.members.filter(id=request.user.id):                        # ユーザーがグループに属していない
-        return JSONResponse({}, status=404)
-    r = Relation.objects.get(ckgroup=g, ckuser=request.user)            # ユーザーがまだグループに参加していない
-    if not r.verification:
+    g = _get_permitted_group_obj(request, group_id)
+    if not g:
         return JSONResponse({}, status=404)
 
     members = []
@@ -184,3 +218,38 @@ def get_invited_group_list(request):
             invited_groups.append(i)
     response["invited_groups"] = [d["fields"] for d in serializers.serialize("python", invited_groups)]
     return JSONResponse(response, status=200)
+
+
+
+def _get_permitted_checklist_obj(request, list_id):
+    if request is None or list_id is None:
+        return None
+    try:
+        list = List.objects.get(list_id=list_id)
+    except:                                                             # list_idがおかしい
+        return None
+    if list.parent_user:
+        if list.parent_user != request.user:                            # リストがログインしているユーザーのものでない
+            return None
+    elif list.parent_group:
+        g = list.parent_group
+        if not g.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
+            return None
+        r = Relation.objects.get(ckgroup=g, ckuser=request.user)        # ユーザーがまだグループに参加していない
+        if not r.verification:
+            return None
+    return list
+
+def _get_permitted_group_obj(request, group_id):
+    if request is None or group_id is None:
+        return None
+    try:
+        group = CKGroup.objects.get(group_id=group_id)
+    except:                                                             # group_idがおかしい
+        return None
+    if not group.members.filter(id=request.user.id):                    # ユーザーがグループに属していない
+        return None
+    r = Relation.objects.get(ckgroup=group, ckuser=request.user)        # ユーザーがまだグループに参加していない
+    if not r.verification:
+        return None
+    return group
