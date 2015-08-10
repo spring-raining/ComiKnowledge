@@ -10,11 +10,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-
 from datetime import datetime
 
 from ck.models import *
-from src.data.list import prepare_circle_obj
+from src.data.list import import_list, prepare_circle_obj
+from src.error import *
 
 #
 #   REST API用にHttpResponseをオーバーラップ
@@ -54,12 +54,14 @@ def checklist_on_delete(request, list_id):
     if request.method == "POST":
         return delete_checklist_circle(request, list_id)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
 @permission_classes((IsAuthenticated,))
 def checklist_list(request):
     if request.method == "GET":
         return get_checklist_list(request)
+    if request.method == "POST":
+        return post_checklist(request)
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication))
@@ -88,7 +90,7 @@ def invited_group_list(request):
 #
 def post_obtain_token_by_session(request):
     (token, _) = Token.objects.get_or_create(user = request.user)
-    return JSONResponse({"token": token.key}, created=201)
+    return JSONResponse({"token": token.key}, status=201)
 
 #
 #   get_checklist
@@ -154,10 +156,27 @@ def delete_checklist_circle(request, list_id):
 #   GET     /api/v1/checklist/
 #
 def get_checklist_list(request):
-    response ={}
+    response = {}
     checklists = request.user.list_set.all()
     response["checklists"] = [d["fields"] for d in serializers.serialize("python", checklists)]
     return JSONResponse(response, status=200)
+
+#
+#   post_checklist
+#   POST    /api/v1/checklist
+#
+def post_checklist(request):
+    if not "csv" in request.data:
+        return JSONResponse({"detail": "CSV file not found."}, status=400)
+    csv_file = request.data.get("csv")
+    try:
+        l = import_list(csv_file, request.user)
+        response = {
+            "list_info": serializers.serialize("python", [l])[0]["fields"],
+        }
+        return JSONResponse(response, status=201)
+    except (ChecklistInvalidError, ChecklistVersionError, TooMuchListsError) as err:
+        return JSONResponse({"detail": str(err)}, status=400)
 
 #
 #   get_group
