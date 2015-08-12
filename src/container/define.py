@@ -112,5 +112,4 @@ class DefineContainer:
             self.fine_print_area = None
 
 if __name__ == "__main__":
-    # テストは書いちゃダメ
     pass

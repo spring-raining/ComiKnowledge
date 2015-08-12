@@ -58,5 +58,4 @@ def parse_checklist_array(csv_file):
 
 
 if __name__ == "__main__":
-    # ここにテストを書くべからず
     pass

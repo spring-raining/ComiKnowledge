@@ -25,5 +25,4 @@ def resize_thumbnail(path, size):
     canvas.save(path, "PNG", quality=95)
 
 if __name__ == "__main__":
-    # ここはテストを書くべき所ではない
     pass

@@ -3,6 +3,7 @@
 import csv
 import os
 import re
+import dajaxice.finders
 
 from ck.models import *
 import src
@@ -12,7 +13,7 @@ from src.utils import generate_rand_str, convert_to_hankaku
 from src.error import *
 
 
-LIST_LIMIT = 10
+LIST_LIMIT = 100
 
 def import_list(csv_file, parent_user):
     ALLOWED_EVENT_NAME = (
@@ -60,71 +61,26 @@ def import_list(csv_file, parent_user):
             l.mac_print_info = line[1]
     for line in arr:
         if line[0] == "Circle":
-            lc = ListCircle()
-            lc.added_by = parent_user
             try:
-                lc.serial_number = int(line[1])
-                lc.color_number = int(line[2])
-                lc.page_number = int(line[3]) if line[3].isdigit() and int(line[3]) else None
-                lc.cut_index = int(line[4]) if line[4].isdigit() and int(line[4]) else None
-                lc.week = line[5]
-                lc.area = line[6]
-                lc.block = convert_to_hankaku(line[7])
-                lc.space_number = int(line[8]) if line[8].isdigit() and int(line[8]) else None
-                lc.genre_code = int(line[9]) if line[9].isdigit() and int(line[9]) else None
-                lc.circle_name = line[10]
-                lc.circle_name_yomigana = line[11]
-                lc.pen_name = line[12]
-                lc.book_name = line[13]
-                lc.url = line[14]
-                lc.mail = line[15]
-                lc.description = line[16]
-                lc.memo = line[17]
-                lc.map_x = int(line[18]) if line[18] else None
-                lc.map_y = int(line[19]) if line[19] else None
-                lc.layout = int(line[20]) if line[20] else None
-                lc.space_number_sub = sub(line[21])
-                lc.update_data = line[22]
-                lc.circlems_url = line[23]
-                lc.rss = line[24]
-                lc.rss_data = line[25]
-            except IndexError:
-                pass
+                lc = prepare_circle_obj(line[1:], parent_user)
             except:
                 raise ChecklistInvalidError
-            arr_lci.append(lc)
+            if isinstance(lc, ListCircle):
+                arr_lci.append(lc)
         elif line[0] == "UnKnown":
-            lu = ListUnKnown()
             try:
-                lu.circle_name = line[1]
-                lu.circle_name_yomigana = line[2]
-                lu.pen_name = line[3]
-                lu.memo = line[4]
-                lu.color_number = to_rgb_color(line[5])
-                lu.book_name = line[6]
-                lu.url = line[7]
-                lu.mail = line[8]
-                lu.description = line[9]
-                lu.update_data = line[10]
-                lu.circlems_url = line[11]
-                lu.rss = line[12]
-            except IndexError:
-                pass
+                lu = prepare_unknown_obj(line[1:])
             except:
                 raise ChecklistInvalidError
-            arr_lun.append(lu)
+            if isinstance(lu, ListUnKnown):
+                arr_lun.append(lu)
         elif line[0] == "Color":
-            lc = ListColor()
             try:
-                lc.color_number = int(line[1])
-                lc.check_color = to_rgb_color(line[2])
-                lc.print_color = to_rgb_color(line[3])
-                lc.description = line[4]
-            except IndexError:
-                pass
+                lc = prepare_color_obj(line[1:])
             except:
                 raise ChecklistInvalidError
-            arr_lco.append(lc)
+            if isinstance(lc, ListColor):
+                arr_lco.append(lc)
     try:
         l.save()
         for i in arr_lci:
@@ -156,6 +112,105 @@ def create_list(list_name, parent_user):
     l.header_id = "%s %s" % (src.APP_NAME, str(src.VERSION))
     l.save()
     return l
+
+
+# 引数がリストの場合、CSVの順番で[serial_number, color_number,..., rss_data]
+# 辞書の場合、{"serial_number": serial_number, ... }
+def prepare_circle_obj(info, parent_user):
+    sub = lambda x: "a" if x == "0" else ("b" if x == "1" else None)
+
+    if isinstance(info, list):
+        arr = info
+    elif isinstance(info, dict):
+        arr = [info.get("serial_number",""), info.get("color_number",""), info.get("page_number",""), info.get("cut_index",""),
+               info.get("week",""), info.get("area",""), info.get("block",""), info.get("space_number",""), info.get("genre_code",""),
+               info.get("circle_name",""), info.get("circle_name_yomigana",""), info.get("pen_name",""), info.get("book_name",""),
+               info.get("url",""), info.get("mail",""), info.get("description",""), info.get("memo",""), info.get("map_x",""),
+               info.get("map_y",""), info.get("layout",""), info.get("space_number_sub",""), info.get("update_data",""),
+               info.get("circlems_url",""), info.get("rss",""), info.get("rss_data","")]
+    else:
+        return None
+    lc = ListCircle()
+    try:
+        lc.added_by = parent_user
+        lc.serial_number = int(arr[0])
+        lc.color_number = int(arr[1])
+        lc.page_number = int(arr[2]) if arr[2].isdigit() and int(arr[2]) else None
+        lc.cut_index = int(arr[3]) if arr[3].isdigit() and int(arr[3]) else None
+        lc.week = arr[4]
+        lc.area = arr[5]
+        lc.block = convert_to_hankaku(arr[6])
+        lc.space_number = int(arr[7]) if arr[7].isdigit() and int(arr[7]) else None
+        lc.genre_code = int(arr[8]) if arr[8].isdigit() and int(arr[8]) else None
+        lc.circle_name = arr[9]
+        lc.circle_name_yomigana = arr[10]
+        lc.pen_name = arr[11]
+        lc.book_name = arr[12]
+        lc.url = arr[13]
+        lc.mail = arr[14]
+        lc.description = arr[15]
+        lc.memo = arr[16]
+        lc.map_x = int(arr[17]) if arr[17] else None
+        lc.map_y = int(arr[18]) if arr[18] else None
+        lc.layout = int(arr[19]) if arr[19] else None
+        lc.space_number_sub = sub(arr[20])
+        lc.update_data = arr[21]
+        lc.circlems_url = arr[22]
+        lc.rss = arr[23]
+        lc.rss_data = arr[24]
+    except IndexError:
+        pass
+    return lc
+
+
+# 引数がリストの場合、CSVの順番で[circle_name, circle_name_yomigana,..., rss]
+# 辞書の場合、{"circle_name": circle_name, ... }
+def prepare_unknown_obj(info, csv_color_format=True):
+    if isinstance(info, list):
+        arr = info
+    elif isinstance(info, dict):
+        arr = [info.get("circle_name",""), info.get("circle_name_yomigana",""), info.get("pen_name",""), info.get("memo",""),
+               info.get("color_number",""), info.get("book_name",""), info.get("url",""), info.get("mail",""),
+               info.get("description",""), info.get("update_data",""), info.get("circlems_url",""), info.get("rss","")]
+    else:
+        return None
+    lu = ListUnKnown()
+    try:
+        lu.circle_name = arr[0]
+        lu.circle_name_yomigana = arr[1]
+        lu.pen_name = arr[2]
+        lu.memo = arr[3]
+        lu.color_number = to_rgb_color(arr[4]) if csv_color_format else arr[4]
+        lu.book_name = arr[5]
+        lu.url = arr[6]
+        lu.mail = arr[7]
+        lu.description = arr[8]
+        lu.update_data = arr[9]
+        lu.circlems_url = arr[10]
+        lu.rss = arr[11]
+    except IndexError:
+        pass
+    return lu
+
+# 引数がリストの場合、CSVの順番で[color_number, check_color, print_color, rss]
+# 辞書の場合、{"color_number": color_number, ... }
+def prepare_color_obj(info, csv_color_format=True):
+    if isinstance(info, list):
+        arr = info
+    elif isinstance(info, dict):
+        arr = [info.get("color_number",""), info.get("check_color",""), info.get("print_color",""), info.get("description","")]
+    else:
+        return None
+    lc = ListColor()
+    try:
+        lc.color_number = int(arr[0])
+        lc.check_color = to_rgb_color(arr[1]) if csv_color_format else arr[1]
+        lc.print_color = to_rgb_color(arr[2]) if csv_color_format else arr[2]
+        lc.description = arr[3]
+    except IndexError:
+        pass
+    return lc
+
 
 def delete_list(list_id):
     try:
@@ -334,5 +389,4 @@ def output_list(response, list_id, memo_template, color_option=1, color_order=(1
     return response
 
 if __name__ == "__main__":
-    # テストは書いちゃらめええええ
     pass

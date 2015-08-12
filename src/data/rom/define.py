@@ -168,5 +168,4 @@ def import_define(path, encoding):
     return rtn
 
 if __name__ == "__main__":
-    # テストはテストクラスへ
     pass

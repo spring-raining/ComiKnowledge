@@ -122,16 +122,6 @@
     <div id="navbar-line"></div>
     <div class="navbar-collapse collapse navbar-target">
     {% block navbar-contents %}
-      <div class="col-sm-3">
-        <form class="navbar-form" action="{% url "ck.views.search" %}" role="search" method="post">{% csrf_token %}
-          <div class="input-group">
-            <input type="text" class="form-control input-sm" name="keyword" placeholder="検索">
-            <div class="input-group-btn">
-              <button type="submit" class="btn btn-sm btn-inverse"><span class="glyphicon glyphicon-search"></span></button>
-            </div>
-          </div>
-        </form>
-      </div>
       <ul class="nav navbar-nav">
         <li id="navbar-group"><a href={% url "ck.views.group" %}>グループ</a></li>
         <li id="navbar-checklist"><a href={% url "ck.views.checklist" %}>チェックリスト</a></li>

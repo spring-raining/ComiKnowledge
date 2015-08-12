@@ -6,8 +6,14 @@ from django.conf import settings
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 from dajaxice.core import dajaxice_autodiscover, dajaxice_config
+from allauth.socialaccount.providers.twitter.views import TwitterOAuthAdapter
+from rest_auth.registration.views import SocialLogin
+
 admin.autodiscover()
 dajaxice_autodiscover()
+
+class TwitterApiLogin(SocialLogin):
+    adapter_class = TwitterOAuthAdapter
 
 urlpatterns = patterns('',
     url(r'^$', 'ck.views.index'),
@@ -23,14 +29,14 @@ urlpatterns = patterns('',
     url(r'^group/$', 'ck.views.group'),
     url(r'^group/(?P<group_id>\w+)/$', 'ck.views.group_home'),
     url(r'^group/(?P<group_id>\w+)/create$', 'ck.views.group_checklist_create'),
-    url(r'^search/$', 'ck.views.search'),
-    url(r'^circle/register/$', 'ck.views.circle_register'),
-    url(r'^circle/(?P<circle_id>\w+)/$', 'ck.views.circle'),
-    url(r'^circle/(?P<circle_id>\w+)/edit/$', 'ck.views.circle_edit'),
-    url(r'^company/register/$', 'ck.views.company_register'),
-    url(r'^company/(?P<company_id>\w+)/$', 'ck.views.company'),
-    url(r'^company/(?P<company_id>\w+)/edit/$', 'ck.views.company_edit'),
-    url(r'', include('social_auth.urls')),
+
+    #url(r'^api/auth/', include('rest_auth.urls')),
+    #url(r'^api/auth/registration', include('rest_auth.registration.urls')),
+    #url(r'^api/auth/twitter$', TwitterApiLogin.as_view(), name="twitter_login"),
+    url(r'^api/v1/', include('api.urls')),
+
+    url(r'^accounts/', include('allauth.urls')),
+    #url(r'', include('social_auth.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

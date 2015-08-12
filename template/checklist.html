@@ -3,21 +3,7 @@
 {% block title %}チェックリスト | {% endblock %}
 
 {% block script %}
-  <script>
-  $(function() {
-      $("#navbar-checklist").addClass("active");
-
-      $(".submit_delete_list").click(function() {
-          if (confirm($(this).attr("name")+"を削除しますか？")) {
-              Dajaxice.ck.ajax_delete_list(callback_delete_list, {"list_id":$(this).val()});
-          }
-      });
-  });
-
-  function callback_delete_list(data) {
-      $("tr[id="+data.list_id+"]").fadeOut("slow");
-  }
-  </script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/checklist.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -33,7 +19,7 @@
     <div class="alert alert-danger" id="alert">リストの読み込みに失敗しました</div>
   {% endifequal %}
   {% ifequal alert_code 4 %}
-    <div class="alert alert-danger" id="alert">リストの読み込みができませんでした<br>読み込むリストはC85用に作成されたリストを選択してください</div>
+    <div class="alert alert-danger" id="alert">リストの読み込みができませんでした<br>読み込むリストはC88用に作成されたリストを選択してください</div>
   {% endifequal %}
   {% ifequal alert_code 5 %}
     <div class="alert alert-danger" id="alert">1人が読み込めるチェックリストは10個までです</div>

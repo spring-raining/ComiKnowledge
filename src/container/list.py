@@ -123,5 +123,4 @@ class ColorContainer:
         settings.endGroup()
 
 if __name__ == "__main__":
-    # ここにテストを書くと新刊が目の前で売り切れる
     pass
