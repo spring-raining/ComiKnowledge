@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 APP_NAME = "ComiKnowledge"
-VERSION = "C85.2.0"
+VERSION = "C88.1.0"
 COMIKET_NUMBER = 88
 HEADER_NAME = "ComicMarket88"
 DEFAULT_COLOR = {1: "FF944A",
